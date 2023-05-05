@@ -11,3 +11,8 @@ export interface UserModelInterface {
   semillero_id: number;
   programa_id: number;
 }
+
+export interface LoginRequestInterface {
+  correo_est: string;
+  contrasena: string;
+}

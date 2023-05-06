@@ -17,3 +17,12 @@ export const validateLogin =[
     check('contrasena').notEmpty().withMessage('La contraseña es requerida').trim()
 ];
 
+
+export const validateUpdateUser =[
+    check('contrasena').notEmpty().withMessage('El correo del estudiante es requerido').trim(),
+    check('nombres').notEmpty().withMessage('La contraseña es requerida').trim(),
+    check('apellidos').notEmpty().withMessage('El correo del estudiante es requerido').trim(),
+    check('telefono').notEmpty().withMessage('La contraseña es requerida').trim(),
+    check('visibilidad').notEmpty().withMessage('El correo del estudiante es requerido').trim(),
+    check('correo_personal').notEmpty().withMessage('La contraseña es requerida').trim()
+];

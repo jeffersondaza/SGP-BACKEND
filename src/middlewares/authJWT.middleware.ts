@@ -4,16 +4,17 @@ import { UserModelInterface } from '../interfaces/users/userModel.interface';
 import sequelize from '../db/connection';
 import { QueryTypes } from 'sequelize';
 import { CustomRequest } from '../interfaces/commons/customRequest.interface';
+import { respond } from '../helpers/respond';
 
 export const verifyToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
     if (!req.headers.authorization) {
-        return res.status(401).send('Unathorized Request');
+        return res.status(401).send(respond('0', 'Unathorized Request', {}));
     }
 
     //Se remueve la cadena Bearer que se usa como estandar cuando se envia el token en la cabecera
     const token = req.headers.authorization.split(' ')[1];
     if (!token) {
-        return res.status(401).send('Wrong token');
+        return res.status(401).send(respond('0', 'Wrong Token', {}));
     }
 
     // if (!token)
@@ -40,6 +41,6 @@ export const verifyToken = async (req: CustomRequest, res: Response, next: NextF
         next();
         
     } catch (err) {
-        return res.status(401).json({ message: 'Unauthorized' })
+        return res.status(401).json(respond('0', 'Unathorized', {}))
     }
 };

@@ -79,7 +79,7 @@ export const putUser = async (req: Request, res: Response) => {
 
   try {
     const results = await sequelize.query(
-      `UPDATE usuario SET contrasena = '${body.contrasena}', nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= '${body.apellidos}', visibilidad='${body.visibilidad}', correo_personal='${body.correo_personal}' WHERE cedula = '${id}';`,
+      `UPDATE usuario SET contrasena = '${body.contrasena}', nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, visibilidad='${body.visibilidad}', correo_personal='${body.correo_personal}' WHERE cedula = '${id}';`,
       { type: QueryTypes.UPDATE }
     );
 
@@ -88,12 +88,12 @@ export const putUser = async (req: Request, res: Response) => {
       res.status(400).json(respond("0", "Error", results));
     } else if (results[1] === 0) {
       res
-        .status(204)
+        .status(203)
         .json(
           respond(
             "0",
             `No hay ningún usuario con el id: ${id} o los datos son los mismos`,
-            results
+            results[0]
           )
         );
     } else {

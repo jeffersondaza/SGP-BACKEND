@@ -9,7 +9,7 @@ const router = Router();
 router.get('/all', [(verifyToken) as any],getUsers);
 router.get('/:id', [genericValidations],[(verifyToken) as any], getUser);
 router.post('/', validateCreateUser, [genericValidations],[(verifyToken) as any], createUser);
-router.put('/:id', validateUpdateUser, [(verifyToken) as any],putUser );
+router.put('/:id', validateUpdateUser, [genericValidations], [(verifyToken) as any],putUser );
 router.delete('/:id', [(verifyToken) as any],deleteUser); 
 router.post('/login', validateLogin, [genericValidations],  login);
 

@@ -40,7 +40,11 @@ export const verifyToken = async (req: CustomRequest, res: Response, next: NextF
 
         next();
         
-    } catch (err) {
-        return res.status(401).json(respond('0', 'Unathorized', {}))
+    } catch (err:any) {
+        if(err.expiredAt) {
+            return res.status(401).json(respond('-1', 'Token expired', {}))
+        }else {
+            return res.status(401).json(respond('0', 'Unathorized', {}))
+        }
     }
 };

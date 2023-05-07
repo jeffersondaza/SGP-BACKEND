@@ -13,6 +13,6 @@ export interface UserModelInterface {
 }
 
 export interface LoginRequestInterface {
-  correo_est: string;
-  contrasena: string;
+  institutionalEmail: string;
+  password: string;
 }

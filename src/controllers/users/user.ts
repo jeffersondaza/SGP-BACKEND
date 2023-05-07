@@ -1,15 +1,18 @@
 import { Request, Response } from "express";
 import { QueryTypes } from "sequelize";
 import sequelize from "../../db/connection";
-import { LoginRequestInterface, UserModelInterface } from "../../interfaces/users/userModel.interface";
+import {
+  LoginRequestInterface,
+  UserModelInterface,
+} from "../../interfaces/users/userModel.interface";
 import { respond } from "../../helpers/respond";
 import { comparePassword, encryptPassword } from "../../helpers/manageAccess";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const results: Array<UserModelInterface> = await sequelize.query(
-      "SELECT * FROM usuario;",
+      "SELECT cedula, cod_universitario, correo_est, nombres, apellidos, telefono, visibilidad, semillero_id, programa_id FROM usuario;",
       { type: QueryTypes.SELECT }
     );
     return results
@@ -25,55 +28,75 @@ export const getUser = async (req: Request, res: Response) => {
 
   try {
     const results: Array<UserModelInterface> = await sequelize.query(
-      `SELECT * FROM usuario where cedula= ${id};`,
-      { type: QueryTypes.SELECT }
+      "SELECT cedula, cod_universitario, correo_est, nombres, apellidos, telefono, visibilidad, semillero_id, programa_id FROM usuario where cedula= :cedula;",
+      { replacements: { cedula: id }, type: QueryTypes.SELECT }
     );
 
     if (!results) {
-      res.status(400).json(respond("0", "Error", results));
+      return res.status(400).json(respond("0", "Error", results));
     } else if (!results[0]) {
-      res
+      return res
         .status(200)
-        .json(respond("1", `No hay ningún usuario con el id: ${id}`, results));
+        .json(respond("0", `No hay ningún usuario con el id: ${id}`, results));
     } else {
-      res.status(200).json(respond("1", "OK", results));
+      return res.status(200).json(respond("1", "OK", results[0]));
     }
   } catch (error) {
-    res.status(500).json(respond("0", "Error", error));
+    return res.status(500).json(respond("0", "Error", error));
   }
 };
 
-export const createUser = async (req: Request<never, never, UserModelInterface, never, never>, res: Response) => {
+export const createUser = async (
+  req: Request<never, never, UserModelInterface, never, never>,
+  res: Response
+) => {
   const { body } = req;
 
-  if (!body.cedula || !body.telefono) {
-    res
-      .status(404)
-      .json(
-        respond(
-          "0",
-          "Atributos incompletos, por favor verifica los datos",
-          body
-        )
-      );
-  } else {
+  try {
+    const result: Array<UserModelInterface> = await sequelize.query(
+      'SELECT cedula, cod_universitario, correo_est, nombres, apellidos, telefono, visibilidad, semillero_id, programa_id FROM usuario where cedula= :cedula or cod_universitario = :cod_universitario or correo_est = :correo_est;',
+      { replacements: { cedula: body.cedula, cod_universitario: body.cod_universitario, correo_est: body.correo_est }, type: QueryTypes.SELECT }
+    );
+
+    console.log("Estoy en el select" + result[0].cedula + ' - '+result[0].cod_universitario + '-' +result[0].correo_est);
+    if ((result[0].cedula === body.cedula) || (result[0].cod_universitario == body.cod_universitario || (result[0].correo_est == body.correo_est))) {
+      return res.status(208).json(respond('0', 'El usuario ya se encuentra registrado con la misma cedula, código de estudiante o correo de estudiante', {}));
+    }else{
+      return res.status(500).json(respond('0', 'Error inesperado', {}));
+    }
+      
+  } catch (error) {
+
     try {
-      const password = await encryptPassword(body.contrasena); 
+      const password = await encryptPassword(body.contrasena);
       const results = await sequelize.query(
-        `INSERT INTO usuario (cedula, cod_universitario, correo_est, contrasena, nombres, apellidos, telefono , visibilidad, correo_personal) values('${body.cedula}', ${body.cod_universitario}, '${body.correo_est}', '${password}', '${body.nombres}', '${body.apellidos}', '${body.telefono}', '${body.visibilidad}', '${body.correo_personal}');`,
-        { type: QueryTypes.INSERT }
+        'INSERT INTO usuario (cedula, cod_universitario, correo_est, contrasena, nombres, apellidos, telefono , visibilidad, correo_personal) values(:cedula, :cod_universitario, :correo_est, :password, :nombres, :apellidos, :telefono, :visibilidad, :correo_personal);',
+        {
+          replacements: {
+            cedula: body.cedula,
+            cod_universitario: body.cod_universitario,
+            correo_est: body.correo_est,
+            password: password,
+            nombres: body.nombres,
+            apellidos: body.apellidos,
+            telefono: body.telefono,
+            visibilidad: body.visibilidad,
+            correo_personal: body.correo_personal,
+          },
+          type: QueryTypes.INSERT,
+        }
       );
-      results
-        ? res.status(200).json(respond("1", "OK", results))
-        : res.status(400).json(respond("0", "Error", results));
+      return results
+        ? res.status(200).json(respond('1', 'OK', results))
+        : res.status(400).json(respond('0', 'Error', results));
+    
     } catch (error) {
-      res.status(500).json(respond("0", "Error", error));
+      return res.status(500).json(respond('0', 'Error', error));
     }
   }
-
 };
 
-export const putUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
 
@@ -83,11 +106,10 @@ export const putUser = async (req: Request, res: Response) => {
       { type: QueryTypes.UPDATE }
     );
 
-    console.log(results[1]);
     if (!results) {
-      res.status(400).json(respond("0", "Error", results));
+      return res.status(400).json(respond("0", "Error", results));
     } else if (results[1] === 0) {
-      res
+      return res
         .status(203)
         .json(
           respond(
@@ -97,10 +119,10 @@ export const putUser = async (req: Request, res: Response) => {
           )
         );
     } else {
-      res.status(200).json(respond("1", "OK", results));
+      return res.status(200).json(respond("1", "OK", results));
     }
   } catch (error) {
-    res.status(500).json(respond("0", "Error", error));
+    return res.status(500).json(respond("0", "Error", error));
   }
 };
 
@@ -114,7 +136,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     );
 
     console.log(results);
-    res
+    return res
       .status(200)
       .json(
         respond(
@@ -124,41 +146,165 @@ export const deleteUser = async (req: Request, res: Response) => {
         )
       );
   } catch (error) {
-    res.status(500).json(respond("0", "Error", error));
+    return res.status(500).json(respond("0", "Error", error));
   }
 };
 
-export const login = async (req: Request<never, never, LoginRequestInterface, never, never>, res: Response) => {
-
+export const login = async (
+  req: Request<never, never, LoginRequestInterface, never, never>,
+  res: Response
+) => {
   const { body } = req;
 
   try {
-      const [result]: Array<UserModelInterface> = await sequelize.query(
-        "SELECT * FROM usuario WHERE correo_est = :correo_est",
-        {
-          replacements: {
-            correo_est: body.correo_est
-          },
-          type: QueryTypes.SELECT,
-        }
+    const [result]: Array<UserModelInterface> = await sequelize.query(
+      "SELECT * FROM usuario WHERE correo_est = :correo_est",
+      {
+        replacements: {
+          correo_est: body.correo_est,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    if (!result) {
+      return res.status(400).json(respond("0", "Error", result));
+    } else {
+      const matchPassword = await comparePassword(
+        body.contrasena,
+        result.contrasena
       );
 
-      if (!result) {
-        res.status(400).json(respond("0", "Error", result));
-      } else {
-        const matchPassword = await comparePassword(body.contrasena, result.contrasena)
+      if (!matchPassword)
+        return res
+          .status(203)
+          .json(respond("0", "Correo o contraseña incorrectos", {}));
 
-        if (!matchPassword) return res.status(203).json(respond("0", "Correo o contraseña incorrectos", {}));
+      const token = jwt.sign({ id: result.cedula }, process.env.SECRET!, {
+        expiresIn: 86400,
+      });
 
-        const token = jwt.sign({ id: result.cedula}, process.env.SECRET!, {
-          expiresIn: 86400
-        })
-
-        return res.status(200).json(respond('1', 'Operación exitosa!', { token }))
-
-      } 
+      return res
+        .status(200)
+        .json(respond("1", "Operación exitosa!", { token }));
+    }
   } catch (error) {
     console.log(error);
-    return res.status(500).json(respond("0", "Errorrrr", error));
+    return res.status(500).json(respond("0", "Error", error));
+  }
+};
+
+export const getRoles = async (req: Request, res: Response) => {
+  try {
+    const result: Array<any> = await sequelize.query(
+      "SELECT * FROM tipo_usuario",
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return result
+      ? res.status(200).json(respond("1", "OK", result))
+      : res.status(400).json(respond("0", "Error", result));
+  } catch (error) {
+    return res.status(500).json(respond("0", "Error", error));
+  }
+};
+
+export const getRol = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const result: Array<any> = await sequelize.query(
+      "SELECT * FROM usuarios WHERE usuario = :usuario",
+      {
+        replacements: {
+          usuario: id,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    if (!result) {
+      res.status(400).json(respond("0", "Error", result));
+    } else if (!result[0]) {
+      return res
+        .status(203)
+        .json(respond("0", `No hay ningún usuario con el id: ${id}`, result));
+    } else {
+      return res.status(200).json(respond("1", "OK", result[0].tipo_usuario));
+    }
+  } catch (error) {
+    return res.status(500).json(respond("0", "Error", error));
+  }
+};
+
+export const updateUserRol = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { body } = req;
+
+  try {
+    const result = await sequelize.query(
+      "UPDATE usuarios SET tipo_usuario = :tipo_usuario WHERE usuario =usuario;",
+      {
+        replacements: {
+          usuario: id,
+          tipo_usuario: body.tipo_usuario,
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!result) {
+      return res.status(400).json(respond("0", "Error", result));
+    } else if (result[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            "0",
+            `No hay ningún usuario con el id: ${id} o el suario ya tiene el mismo rol`,
+            result[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond("1", "OK", result));
+    }
+  } catch (error) {
+    return res.status(500).json(respond("0", "Error", error));
+  }
+};
+
+export const updatePassword = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { body } = req;
+
+  try {
+    console.log("ID: " + id);
+    const password = await encryptPassword(body.contrasena);
+    const result = await sequelize.query(
+      "UPDATE usuario SET contrasena = :contrasena WHERE cedula = :cedula;",
+      {
+        replacements: {
+          cedula: id,
+          contrasena: password,
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!result) {
+      return res.status(400).json(respond("0", "Error", result));
+    } else if (result[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond("0", `No hay ningún usuario con el id: ${id}`, result[0])
+        );
+    } else {
+      return res.status(200).json(respond("1", "OK", result));
+    }
+  } catch (error) {
+    return res.status(500).json(respond("0", "Error", error));
   }
 };

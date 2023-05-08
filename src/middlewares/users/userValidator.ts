@@ -8,7 +8,6 @@ export const validateCreateUser =[
     check('nombres').notEmpty().withMessage('El nombre del estudiante es requerido').trim(),
     check('apellidos').notEmpty().withMessage('El apellido del estudiante es requerido').trim(),
     check('telefono').notEmpty().withMessage('El telefono del estudiante es requerido').trim(),
-    check('visibilidad').notEmpty().withMessage('La visibilidad del usuario es requerido').trim(),
     check('correo_personal').notEmpty().withMessage('El correo personal del estudiante es requerido').trim()
 ];
 

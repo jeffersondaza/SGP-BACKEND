@@ -65,7 +65,7 @@ export const createUser = async (
             nombres: body.nombres,
             apellidos: body.apellidos,
             telefono: body.telefono,
-            visibilidad: body.visibilidad,
+            visibilidad: true,
             correo_personal: body.correo_personal,
           },
           type: QueryTypes.INSERT,
@@ -75,6 +75,7 @@ export const createUser = async (
         ? res.status(200).json(respond('1', 'OK', results))
         : res.status(400).json(respond('0', 'Error', results));
   } catch (error: any) {
+      console.log('ERRROR: ', error)
       return res.status(500).json(respond('0', 'Error', { error: error?.name } ?? error));
   }
 };
@@ -167,9 +168,11 @@ export const login = async (
         expiresIn: 7200,
       });
 
+      const { contrasena, ...finalResponse } = result;  
+
       return res
         .status(200)
-        .json(respond('1', 'Operación exitosa!', { token }));
+        .json(respond('1', 'Operación exitosa!', { ...finalResponse, token }));
     }
   } catch (error) {
     console.log(error);

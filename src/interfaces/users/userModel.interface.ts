@@ -10,6 +10,9 @@ export interface UserModelInterface {
   correo_personal: string;
   semillero_id: number;
   programa_id: number;
+  nombre?: string;
+  tipo_usuario?: string;
+  descripcion?: string
 }
 
 export interface LoginRequestInterface {

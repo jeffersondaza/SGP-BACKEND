@@ -142,7 +142,7 @@ export const login = async (
 
   try {
     const [result]: Array<UserModelInterface> = await sequelize.query(
-      'SELECT * FROM usuario WHERE correo_est = :correo_est',
+      'SELECT * FROM usuario JOIN usuarios ON usuario.cedula = usuarios.usuario JOIN tipo_usuario ON usuarios.tipo_usuario = tipo_usuario.nombre WHERE usuario.correo_est = :correo_est',
       {
         replacements: {
           correo_est: body.institutionalEmail,
@@ -168,11 +168,11 @@ export const login = async (
         expiresIn: 7200,
       });
 
-      const { contrasena, ...finalResponse } = result;  
+      const { contrasena, nombre, tipo_usuario, descripcion, ...finalResponse } = result;  
 
       return res
         .status(200)
-        .json(respond('1', 'Operación exitosa!', { ...finalResponse, token }));
+        .json(respond('1', 'Operación exitosa!', { ...finalResponse, role: tipo_usuario, token }));
     }
   } catch (error) {
     console.log(error);

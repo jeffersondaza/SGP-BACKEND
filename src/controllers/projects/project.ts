@@ -197,35 +197,3 @@ export const approveProject = async (
         return res.status(500).json(respond('0', 'Error', error));
     }
 };
-
-export const assignRolInProject = async (
-    req: Request<never, never, ProjectModelInterface, never, never>,
-    res: Response
-  ) => {
-      const {id} = req.params;
-      const { body} = req;
-  
-      try {
-        const results = await sequelize.query(
-          'INSERT INTO participantes (usuario, p, descripcion, fecha_inicio, visibilidad, ciudad, metodologia , justificacion, tipo_proyecto) values(:titulo, :estado, :descripcion, :fecha_inicio, 1, :ciudad, :metodologia, :justificacion, :tipo_proyecto);',
-          {
-            replacements: {
-              titulo: body.titulo,
-              estado: body.estado,
-              descripcion: body.descripcion,
-              fecha_inicio: body.fecha_inicio,
-              ciudad: body.ciudad,
-              metodologia: body.metodologia,
-              justificacion: body.justificacion,
-              tipo_proyecto: body.tipo_proyecto,
-            },
-            type: QueryTypes.INSERT,
-          }
-        );
-        return results
-          ? res.status(200).json(respond('1', 'OK', results))
-          : res.status(400).json(respond('0', 'Error', results));
-      } catch (error) {
-        return res.status(500).json(respond('0', 'Error', error));
-      }
-  };

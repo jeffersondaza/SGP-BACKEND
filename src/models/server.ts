@@ -1,6 +1,7 @@
 import express, {Application} from 'express';
 import userRoutes from '../routes/users/user';
 import projectRoutes from '../routes/projects/project';
+import participantRoutes from '../routes/participants/participant';
 import cors from 'cors';
 
 import db from '../db/connection';
@@ -11,7 +12,8 @@ class Server {
     private port: String;
     private apiPaths ={
         usuario: '/api/user',
-        project: '/api/project'
+        project: '/api/project',
+        participant: '/api/participant'
     };
 
     constructor(){
@@ -51,6 +53,7 @@ class Server {
     routes(){
         this.app.use( this.apiPaths.usuario, userRoutes);
         this.app.use( this.apiPaths.project, projectRoutes);
+        this.app.use( this.apiPaths.participant, participantRoutes);
     }
 
     listen(){

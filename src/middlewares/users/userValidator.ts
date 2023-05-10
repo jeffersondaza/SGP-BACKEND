@@ -27,3 +27,7 @@ export const validateUpdateUser =[
 export const validateChangePassword =[
     check('contrasena').notEmpty().withMessage('El usuario y la nueva contraseña son requeridos').trim()
 ];
+
+export const validateUserSession =[
+    check('contrasena').notEmpty().withMessage('El usuario y la nueva contraseña son requeridos').trim()
+];

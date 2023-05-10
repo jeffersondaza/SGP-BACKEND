@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { deleteUser, getUser, getUsers, createUser, updateUser, login, getRol, getRoles, updateUserRol, updatePassword } from "../../controllers/users/user";
+import { deleteUser, getUser, getUsers, createUser, updateUser, login, getRol, getRoles, updateUserRol, updatePassword, validateSession } from "../../controllers/users/user";
 import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
-import { validateChangePassword, validateCreateUser, validateLogin, validateUpdateUser } from "../../middlewares/users/userValidator";
+import { validateChangePassword, validateCreateUser, validateLogin, validateUpdateUser, validateUserSession } from "../../middlewares/users/userValidator";
+
+
 
 const router = Router();
 
@@ -12,6 +14,7 @@ router.post('/', validateCreateUser, [genericValidations], createUser);
 router.put('/:id', validateUpdateUser, [genericValidations], [(verifyToken) as any],updateUser );
 router.delete('/:id', [(verifyToken) as any],deleteUser); 
 router.post('/login', validateLogin, [genericValidations],  login);
+router.get('/validate-session', validateUserSession, [genericValidations],[(verifyToken) as any],  validateSession);
 router.get('/rol/all', [(verifyToken) as any], getRoles);
 router.get('/rol/:id', [(verifyToken) as any], getRol);
 router.put('/rol/:id', [(verifyToken) as any], updateUserRol);

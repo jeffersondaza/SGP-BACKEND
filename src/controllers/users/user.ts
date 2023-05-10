@@ -294,3 +294,10 @@ export const updatePassword = async (req: Request, res: Response) => {
     return res.status(500).json(respond('0', 'Error', error));
   }
 };
+
+export const validateSession = (req:Request, res:Response)=>{
+
+  const { body } = req;
+
+  return res.status(200).json(respond('1', 'OK', body.token));
+}

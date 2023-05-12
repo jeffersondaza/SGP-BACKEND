@@ -4,8 +4,6 @@ import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
 import { validateChangePassword, validateCreateUser, validateLogin, validateUpdateUser, validateUserSession } from "../../middlewares/users/userValidator";
 
-
-
 const router = Router();
 
 router.get('/all', [(verifyToken) as any],getUsers);

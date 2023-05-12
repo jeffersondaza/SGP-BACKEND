@@ -8,6 +8,7 @@ import {
 import { respond } from '../../helpers/respond';
 import { comparePassword, encryptPassword } from '../../helpers/manageAccess';
 import jwt from 'jsonwebtoken';
+import { RolesEnum } from '../../enums/users/roles.enum';
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -71,11 +72,27 @@ export const createUser = async (
           type: QueryTypes.INSERT,
         }
       );
+
+      const result = await sequelize.query(
+        'INSERT INTO usuarios (usuario, tipo_usuario) values(:cedula, :tipo_usuario);',
+        {
+          replacements: {
+            cedula: body.cedula,
+            tipo_usuario: RolesEnum.Student
+          },
+          type: QueryTypes.INSERT,
+        }
+      );
+
+      if(!result){
+        res.status(400).json(respond('0', 'Error', results));
+      }
+        
+
       return results
         ? res.status(200).json(respond('1', 'OK', results))
         : res.status(400).json(respond('0', 'Error', results));
   } catch (error: any) {
-      console.log('ERRROR: ', error)
       return res.status(500).json(respond('0', 'Error', { error: error?.name } ?? error));
   }
 };
@@ -119,7 +136,6 @@ export const deleteUser = async (req: Request, res: Response) => {
       { replacements: { cedula: id }, type: QueryTypes.DELETE }
     );
 
-    console.log(results);
     return res
       .status(200)
       .json(
@@ -168,6 +184,11 @@ export const login = async (
         expiresIn: 7200,
       });
 
+      if(result.visibilidad === 0)
+        return res
+        .status(203)
+        .json(respond('0', 'Acceso denegado', {}));
+
       const { contrasena, nombre, tipo_usuario, descripcion, ...finalResponse } = result;  
 
       return res
@@ -175,7 +196,6 @@ export const login = async (
         .json(respond('1', 'Operación exitosa!', { ...finalResponse, role: tipo_usuario, token }));
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json(respond('0', 'Error', error));
   }
 };
@@ -266,7 +286,6 @@ export const updatePassword = async (req: Request, res: Response) => {
   const { body } = req;
 
   try {
-    console.log('ID: ' + id);
     const password = await encryptPassword(body.contrasena);
     const result = await sequelize.query(
       'UPDATE usuario SET contrasena = :contrasena WHERE cedula = :cedula;',

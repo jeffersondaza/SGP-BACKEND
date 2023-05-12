@@ -162,38 +162,40 @@ export const approveProject = async (
   req: Request<never, never, ProjectModelInterface, never, never>,
   res: Response
 ) => {
-    const {id} = req.params;
-    const { body} = req;
+  const { id } = req.params;
+  const { body } = req;
 
-    try {
-        const results = await sequelize.query(
-            'UPDATE proyecto SET fecha_fin = :fecha_fin, conclusiones = :conclusiones WHERE id = :id;',
-            {
-              replacements: {
-                id: id,
-                fecha_fin: body.fecha_fin,
-                conclusiones: body.conclusiones
-              },
-              type: QueryTypes.UPDATE,
-            }
-          );
-      
-          if (!results) {
-            return res.status(400).json(respond('0', 'Error', results));
-          } else if (results[1] === 0) {
-            return res
-              .status(203)
-              .json(
-                respond(
-                  '0',
-                  `No hay ningún proyecto con el id: ${id} o los datos son los mismos`,
-                  results[0]
-                )
-              );
-          } else {
-            return res.status(200).json(respond('1', 'OK', results));
-          }
-    } catch (error) {
-        return res.status(500).json(respond('0', 'Error', error));
+  try {
+    const results = await sequelize.query(
+      'UPDATE proyecto SET fecha_fin = :fecha_fin, conclusiones = :conclusiones WHERE id = :id;',
+      {
+        replacements: {
+          id: id,
+          fecha_fin: body.fecha_fin,
+          conclusiones: body.conclusiones,
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            `No hay ningún proyecto con el id: ${id} o los datos son los mismos`,
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
     }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
 };
+
+export const createProjectType = () => {};

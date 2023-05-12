@@ -5,8 +5,9 @@ import sequelize from '../db/connection';
 import { QueryTypes } from 'sequelize';
 import { CustomRequest } from '../interfaces/commons/customRequest.interface';
 import { respond } from '../helpers/respond';
+import { verifyAdminRole } from './users/roles.middlewares';
 
-export const verifyToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const verifyToken = async (req: CustomRequest, res: Response, next: NextFunction): Promise<any> => {
     if (!req.headers.authorization) {
         return res.status(401).send(respond('0', 'Unathorized Request', {}));
     }

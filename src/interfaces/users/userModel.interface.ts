@@ -6,7 +6,7 @@ export interface UserModelInterface {
   nombres: string;
   apellidos: string;
   telefono: string;
-  visibilidad: string;
+  visibilidad: number;
   correo_personal: string;
   semillero_id: number;
   programa_id: number;
@@ -18,4 +18,9 @@ export interface UserModelInterface {
 export interface LoginRequestInterface {
   institutionalEmail: string;
   password: string;
+}
+
+export interface RoleInterface {
+  user: string;
+  user_type: string;
 }

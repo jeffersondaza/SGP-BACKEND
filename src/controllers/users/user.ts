@@ -13,7 +13,7 @@ import { RolesEnum } from '../../enums/users/roles.enum';
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const results: Array<UserModelInterface> = await sequelize.query(
-      'SELECT cedula, cod_universitario, correo_est, nombres, apellidos, telefono, visibilidad, semillero_id, programa_id FROM usuario;',
+      'SELECT cedula, cod_universitario, correo_est, nombres, apellidos, telefono, visibilidad, semillero_id, programa_id, correo_personal FROM usuario;',
       { type: QueryTypes.SELECT }
     );
     return results

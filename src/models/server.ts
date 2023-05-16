@@ -2,6 +2,8 @@ import express, {Application} from 'express';
 import userRoutes from '../routes/users/user';
 import projectRoutes from '../routes/projects/project';
 import participantRoutes from '../routes/participants/participant';
+import loginRoutes from '../routes/auth/login';
+import roleRoutes from '../routes/roles/role';
 import cors from 'cors';
 
 import db from '../db/connection';
@@ -13,7 +15,9 @@ class Server {
     private apiPaths ={
         usuario: '/api/user',
         project: '/api/project',
-        participant: '/api/participant'
+        participant: '/api/participant',
+        login: '/api/login',
+        role: '/api/role'
     };
 
     constructor(){
@@ -54,6 +58,8 @@ class Server {
         this.app.use( this.apiPaths.usuario, userRoutes);
         this.app.use( this.apiPaths.project, projectRoutes);
         this.app.use( this.apiPaths.participant, participantRoutes);
+        this.app.use( this.apiPaths.login, loginRoutes);
+        this.app.use( this.apiPaths.role, roleRoutes);
     }
 
     listen(){

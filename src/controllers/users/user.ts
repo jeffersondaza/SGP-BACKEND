@@ -55,49 +55,89 @@ export const createUser = async (
 
   try {
     const password = await encryptPassword(body.contrasena);
-      const results = await sequelize.query(
-        'INSERT INTO usuario (cedula, cod_universitario, correo_est, contrasena, nombres, apellidos, telefono , visibilidad, correo_personal) values(:cedula, :cod_universitario, :correo_est, :password, :nombres, :apellidos, :telefono, :visibilidad, :correo_personal);',
-        {
-          replacements: {
-            cedula: body.cedula,
-            cod_universitario: body.cod_universitario,
-            correo_est: body.correo_est,
-            password: password,
-            nombres: body.nombres,
-            apellidos: body.apellidos,
-            telefono: body.telefono,
-            visibilidad: true,
-            correo_personal: body.correo_personal,
-          },
-          type: QueryTypes.INSERT,
-        }
-      );
-
-      const result = await sequelize.query(
-        'INSERT INTO usuarios (usuario, tipo_usuario) values(:cedula, :tipo_usuario);',
-        {
-          replacements: {
-            cedula: body.cedula,
-            tipo_usuario: RolesEnum.Student
-          },
-          type: QueryTypes.INSERT,
-        }
-      );
-
-      if(!result){
-        res.status(400).json(respond('0', 'Error', results));
+    const results = await sequelize.query(
+      'INSERT INTO usuario (cedula, cod_universitario, correo_est, contrasena, nombres, apellidos, telefono , visibilidad, correo_personal) values(:cedula, :cod_universitario, :correo_est, :password, :nombres, :apellidos, :telefono, :visibilidad, :correo_personal);',
+      {
+        replacements: {
+          cedula: body.cedula,
+          cod_universitario: body.cod_universitario,
+          correo_est: body.correo_est,
+          password: password,
+          nombres: body.nombres,
+          apellidos: body.apellidos,
+          telefono: body.telefono,
+          visibilidad: true,
+          correo_personal: body.correo_personal,
+        },
+        type: QueryTypes.INSERT,
       }
-        
+    );
 
-      return results
-        ? res.status(200).json(respond('1', 'OK', results))
-        : res.status(400).json(respond('0', 'Error', results));
+    const result = await sequelize.query(
+      'INSERT INTO usuarios (usuario, tipo_usuario) values(:cedula, :tipo_usuario);',
+      {
+        replacements: {
+          cedula: body.cedula,
+          tipo_usuario: RolesEnum.Student,
+        },
+        type: QueryTypes.INSERT,
+      }
+    );
+
+    if (!result) {
+      res.status(400).json(respond('0', 'Error', results));
+    }
+
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
   } catch (error: any) {
-      return res.status(500).json(respond('0', 'Error', { error: error?.name } ?? error));
+    return res
+      .status(500)
+      .json(respond('0', 'Error', { error: error?.name } ?? error));
   }
 };
 
 export const updateUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { body } = req;
+
+  try {
+    const results = await sequelize.query(
+      `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}' WHERE cedula = :cedula;`,
+      {
+        replacements: {
+          cedula: id,
+          nombres: body.nombres,
+          apellidos: body.apellidos,
+          telefono: body.telefono,
+          correo_personal: body.correo_personal
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            `Los datos son los mismos`,
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const updateMyAccount = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
 
@@ -115,7 +155,7 @@ export const updateUser = async (req: Request, res: Response) => {
         .json(
           respond(
             '0',
-            `No hay ningún usuario con el id: ${id} o los datos son los mismos`,
+            `Los datos son los mismos`,
             results[0]
           )
         );
@@ -184,23 +224,33 @@ export const login = async (
         expiresIn: 7200,
       });
 
-      if(result.visibilidad === 0)
-        return res
-        .status(203)
-        .json(respond('0', 'Acceso denegado', {}));
+      if (result.visibilidad === 0)
+        return res.status(203).json(respond('0', 'Acceso denegado', {}));
 
-      const { contrasena, nombre, tipo_usuario, descripcion, ...finalResponse } = result;  
+      const {
+        contrasena,
+        nombre,
+        tipo_usuario,
+        descripcion,
+        ...finalResponse
+      } = result;
 
       return res
         .status(200)
-        .json(respond('1', 'Operación exitosa!', { ...finalResponse, role: tipo_usuario, token }));
+        .json(
+          respond('1', 'Operación exitosa!', {
+            ...finalResponse,
+            role: tipo_usuario,
+            token,
+          })
+        );
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
 };
 
-export const getRoles = async (req: Request, res: Response) => {
+export const getRoles = async (req: Request,  res: Response) => {
   try {
     const result: Array<any> = await sequelize.query(
       'SELECT * FROM tipo_usuario',
@@ -238,7 +288,9 @@ export const getRol = async (req: Request, res: Response) => {
         .status(203)
         .json(respond('0', `No hay ningún usuario con el id: ${id}`, result));
     } else {
-      return res.status(200).json(respond('1', 'OK', {'rol': result[0].tipo_usuario}));
+      return res
+        .status(200)
+        .json(respond('1', 'OK', { rol: result[0].tipo_usuario }));
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
@@ -269,7 +321,7 @@ export const updateUserRol = async (req: Request, res: Response) => {
         .json(
           respond(
             '0',
-            `No hay ningún usuario con el id: ${id} o el suario ya tiene el mismo rol`,
+            `El usuario tiene el mismo rol`,
             result[0]
           )
         );
@@ -314,9 +366,8 @@ export const updatePassword = async (req: Request, res: Response) => {
   }
 };
 
-export const validateSession = (req:Request, res:Response)=>{
-
+export const validateSession = (req: Request, res: Response) => {
   const { body } = req;
 
   return res.status(200).json(respond('1', 'OK', body.token));
-}
+};

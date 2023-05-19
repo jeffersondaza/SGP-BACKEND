@@ -47,7 +47,7 @@ export const createProject = async (
   res: Response
 ) => {
   const { body } = req;
-
+  const now = new Date();
   try {
     const results = await sequelize.query(
       'INSERT INTO proyecto (titulo, estado, descripcion, fecha_inicio, visibilidad, ciudad, metodologia , justificacion, tipo_proyecto) values(:titulo, :estado, :descripcion, :fecha_inicio, 1, :ciudad, :metodologia, :justificacion, :tipo_proyecto);',
@@ -56,7 +56,7 @@ export const createProject = async (
           titulo: body.titulo,
           estado: body.estado,
           descripcion: body.descripcion,
-          fecha_inicio: body.fecha_inicio,
+          fecha_inicio: now,
           ciudad: body.ciudad,
           metodologia: body.metodologia,
           justificacion: body.justificacion,
@@ -82,14 +82,13 @@ export const updateProject = async (
 
   try {
     const results = await sequelize.query(
-      'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, visibilidad = :visibilidad, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto WHERE id = :id;',
+      'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto WHERE id = :id;',
       {
         replacements: {
           id: id,
           titulo: body.titulo,
           estado: body.estado,
           descripcion: body.descripcion,
-          visibilidad: body.visibilidad,
           ciudad: body.ciudad,
           metodologia: body.metodologia,
           justificacion: body.justificacion,
@@ -313,6 +312,20 @@ export const updateComment = async (
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const getProjectType = async (req: Request, res: Response) => {
+  try {
+    const results: Array<ProjectModelInterface> = await sequelize.query(
+      'SELECT *  FROM tipo_proyecto;',
+      { type: QueryTypes.SELECT }
+    );
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }

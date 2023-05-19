@@ -154,14 +154,14 @@ export const approveProject = async (
 ) => {
   const { id } = req.params;
   const { body } = req;
-
+  const now = new Date();
   try {
     const results = await sequelize.query(
       'UPDATE proyecto SET fecha_fin = :fecha_fin, retroalimentacion_final = :retroalimentacion_final, conclusiones = :conclusiones, nota = :nota WHERE id = :id;',
       {
         replacements: {
           id: id,
-          fecha_fin: body.fecha_fin,
+          fecha_fin: now,
           retroalimentacion_final: body.retroalimentacion_final,
           conclusiones: body.conclusiones,
           nota: body.nota

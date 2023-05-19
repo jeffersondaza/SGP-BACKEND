@@ -124,7 +124,7 @@ export const updateUser = async (req: Request, res: Response) => {
         .status(203)
         .json(
           respond(
-            '0',
+            '1',
             `Los datos son los mismos`,
             results[0]
           )
@@ -303,7 +303,7 @@ export const updateUserRol = async (req: Request, res: Response) => {
   const { body } = req;
 
   try {
-    const result = await sequelize.query( 
+    const result = await sequelize.query(
       'UPDATE usuarios SET tipo_usuario = :tipo_usuario WHERE usuario = :usuario;',
       {
         replacements: {

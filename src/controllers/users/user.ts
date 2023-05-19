@@ -356,7 +356,7 @@ export const updatePassword = async (req: Request, res: Response) => {
       return res
         .status(203)
         .json(
-          respond('0', `No hay ningún usuario con el id: ${id}`, result[0])
+          respond('0', 'Los datos son los mismos', result[0])
         );
     } else {
       return res.status(200).json(respond('1', 'OK', result));

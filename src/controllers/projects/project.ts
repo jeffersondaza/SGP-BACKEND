@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../db/connection';
 
-import { ProjectModelInterface } from '../../interfaces/projects/projectModel.interface';
+import { CommentModelInterface, ProductModelInterface, ProjectModelInterface } from '../../interfaces/projects/projectModel.interface';
 import { respond } from '../../helpers/respond';
 
 export const getProjects = async (req: Request, res: Response) => {
@@ -104,13 +104,7 @@ export const updateProject = async (
     } else if (results[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond(
-            '0',
-            `No hay ningún proyecto con el id: ${id} o los datos son los mismos`,
-            results[0]
-          )
-        );
+        .json(respond('0', 'Los datos son los mismos', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
@@ -167,12 +161,14 @@ export const approveProject = async (
 
   try {
     const results = await sequelize.query(
-      'UPDATE proyecto SET fecha_fin = :fecha_fin, conclusiones = :conclusiones WHERE id = :id;',
+      'UPDATE proyecto SET fecha_fin = :fecha_fin, retroalimentacion_final = :retroalimentacion_final, conclusiones = :conclusiones, nota = :nota WHERE id = :id;',
       {
         replacements: {
           id: id,
           fecha_fin: body.fecha_fin,
+          retroalimentacion_final: body.retroalimentacion_final,
           conclusiones: body.conclusiones,
+          nota: body.nota
         },
         type: QueryTypes.UPDATE,
       }
@@ -183,13 +179,137 @@ export const approveProject = async (
     } else if (results[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond(
-            '0',
-            `No hay ningún proyecto con el id: ${id} o los datos son los mismos`,
-            results[0]
-          )
-        );
+        .json(respond('0', 'Los datos son los mismos', results[0]));
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const createProduct = async (
+  req: Request<never, never, ProductModelInterface, never, never>,
+  res: Response
+) => {
+  const { body } = req;
+
+  try {
+    const results = await sequelize.query(
+      'INSERT INTO producto (titulo_producto, tipo_producto, url_repo, fecha, proyecto) values(:titulo_producto, :tipo_producto, :url_repo, :fecha, proyecto);',
+      {
+        replacements: {
+          titulo_producto: body.titulo_producto,
+          tipo_producto: body.titulo_producto,
+          url_repo: body.url_repo,
+          fecha: body.fecha,
+          proyecto: body.proyecto
+        },
+        type: QueryTypes.INSERT,
+      }
+    );
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const updateProduct = async (
+  req: Request<never, never, ProductModelInterface, never, never>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { body } = req;
+
+  try {
+    const results = await sequelize.query(
+      'UPDATE producto SET titulo_producto = :titulo_producto, tipo_producto = :tipo_producto, url_repo = :url_repo, fecha = :fecha, proyecto = :proyecto WHERE id = :id;',
+      {
+        replacements: {
+          id: id,
+          titulo_producto: body.titulo_producto,
+          tipo_producto: body.titulo_producto,
+          url_repo: body.url_repo,
+          fecha: body.fecha,
+          proyecto: body.proyecto
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(respond('0', 'Los datos son los mismos', results[0]));
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const createComment = async (
+  req: Request<never, never, CommentModelInterface, never, never>,
+  res: Response
+) => {
+  const { body } = req;
+
+  try {
+    const results = await sequelize.query(
+      'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id) values(:comentario, :fase, :nivel, :fecha, producto_id);',
+      {
+        replacements: {
+          comentario: body.comentario,
+          fase: body.fase,
+          nivel: body.nivel,
+          fecha: body.fecha,
+          producto_id: body.producto_id
+        },
+        type: QueryTypes.INSERT,
+      }
+    );
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const updateComment = async (
+  req: Request<never, never, CommentModelInterface, never, never>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { body } = req;
+
+  try {
+    const results = await sequelize.query(
+      'UPDATE comentario SET comentario = :comentario, fase = :fase, nivel = :nivel, fecha = :fecha, producto_id = :producto_id WHERE id = :id;',
+      {
+        replacements: {
+          id: id,
+          comentario: body.comentario,
+          fase: body.fase,
+          nivel: body.nivel,
+          fecha: body.fecha,
+          producto_id: body.producto_id
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(respond('0', 'Los datos son los mismos', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }

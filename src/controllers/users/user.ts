@@ -143,7 +143,7 @@ export const updateMyAccount = async (req: Request, res: Response) => {
 
   try {
     const results = await sequelize.query(
-      `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, visibilidad='${body.visibilidad}', correo_personal='${body.correo_personal}' WHERE cedula = '${id}';`,
+      `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}' WHERE cedula = '${id}';`,
       { type: QueryTypes.UPDATE }
     );
 
@@ -169,10 +169,11 @@ export const updateMyAccount = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { body } = req;
 
   try {
     const results = await sequelize.query(
-      'DELETE FROM usuario WHERE cedula = :cedula',
+      'UPDATE usuario SET visibilidad = 0 WHERE cedula = :cedula',
       { replacements: { cedula: id }, type: QueryTypes.DELETE }
     );
 
@@ -302,8 +303,8 @@ export const updateUserRol = async (req: Request, res: Response) => {
   const { body } = req;
 
   try {
-    const result = await sequelize.query(
-      'UPDATE usuarios SET tipo_usuario = :tipo_usuario WHERE usuario =usuario;',
+    const result = await sequelize.query( 
+      'UPDATE usuarios SET tipo_usuario = :tipo_usuario WHERE usuario = :usuario;',
       {
         replacements: {
           usuario: id,

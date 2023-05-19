@@ -23,6 +23,7 @@ export const validateUpdateProject =[
 ];
 
 export const validateApproveProject =[
-    check('fecha_fin').notEmpty().withMessage('La fecha final del proyecto es requerida').trim(),
-    check('conclusiones').notEmpty().withMessage('La conclusión del proyecto es requerida').trim()
+    check('retroalimentacion_final').notEmpty().withMessage('La retroalimentación del proyecto es requerida').trim(),
+    check('conclusiones').notEmpty().withMessage('La conclusión del proyecto es requerida').trim(),
+    check('nota').notEmpty().withMessage('La nota del proyecto es requerida').trim()
 ];

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
-import { approveProject, createProject, deleteProject, getProject, getProjectType, getProjects, updateProject } from "../../controllers/projects/project";
+import { approveProject, createProject, deleteProject, getMyProjects, getProject, getProjectType, getProjects, updateProject } from "../../controllers/projects/project";
 import { validateApproveProject, validateCreateProject, validateUpdateProject } from "../../middlewares/projects/projectValidator";
 import { verifyAdminRole } from "../../middlewares/users/roles.middlewares";
 
@@ -15,5 +15,6 @@ router.put('/:id', validateUpdateProject, [genericValidations],[(verifyToken) as
 router.delete('/:id', [(verifyToken) as any], deleteProject);
 router.put('/approve/:id', validateApproveProject, [genericValidations],[(verifyToken) as any], approveProject);
 router.get('/types/all', [(verifyToken) as any],getProjectType);
+router.get('/my-projects/:id', [(verifyToken) as any],getMyProjects);
 
 export default router;

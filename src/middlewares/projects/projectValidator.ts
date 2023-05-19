@@ -2,9 +2,7 @@ import { check, body} from 'express-validator';
 
 export const validateCreateProject =[
     check('titulo').notEmpty().withMessage('El titulo es requerido').trim(),
-    check('estado').notEmpty().withMessage('El estado es requerida').trim(),
     check('descripcion').notEmpty().withMessage('La descripción es requerida').trim(),
-    check('fecha_inicio').notEmpty().withMessage('La fecha de inicio es requerida').trim(),
     check('ciudad').notEmpty().withMessage('La ciudad es requerida').trim(),
     check('metodologia').notEmpty().withMessage('La metodologia es requerida').trim(),
     check('justificacion').notEmpty().withMessage('La justificacion es requerida').trim(),

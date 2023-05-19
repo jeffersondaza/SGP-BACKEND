@@ -328,4 +328,27 @@ export const getProjectType = async (req: Request, res: Response) => {
   }
 };
 
+export const getMyProjects = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const results: Array<ProjectModelInterface> = await sequelize.query(
+      'SELECT id, titulo, estado, descripcion, macro_proyecto, proyecto.fecha_inicio, proyecto.fecha_fin, semillero, retroalimentacion_final, visibilidad, ciudad, metodologia, conclusiones, justificacion, nota, tipo_proyecto FROM proyecto JOIN participantes ON proyecto.id = participantes.proyecto WHERE participantes.usuario = :id;',
+      { replacements: { id: id }, type: QueryTypes.SELECT }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (!results[0]) {
+      return res
+        .status(200)
+        .json(respond('0', `No hay ningún proyecto con el id: ${id}`, results));
+    } else {
+      return res.status(200).json(respond('1', 'OK', results[0]));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
 export const createProjectType = () => {};

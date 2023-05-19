@@ -9,8 +9,9 @@ export const assignRolInProject = async (
   req: Request<never, never, ParticipantModelInterface, never, never>,
   res: Response
 ) => {
-  const { id } = req.params;
+  
   const { body } = req;
+  const now = new Date();
 
   try {
     const results = await sequelize.query(
@@ -19,7 +20,7 @@ export const assignRolInProject = async (
         replacements: {
             usuario: body.usuario,
             proyecto: body.proyecto,
-            fecha_inicio: body.fecha_inicio,
+            fecha_inicio: now,
             rol: body.rol
         },
         type: QueryTypes.INSERT,
@@ -28,7 +29,9 @@ export const assignRolInProject = async (
     return results
       ? res.status(200).json(respond('1', 'OK', results))
       : res.status(400).json(respond('0', 'Error', results));
-  } catch (error) {
-    return res.status(500).json(respond('0', 'Error', error));
+  } catch (error:any) {
+    return res
+      .status(500)
+      .json(respond('0', 'Error', { error: error?.name } ?? error));
   }
 };

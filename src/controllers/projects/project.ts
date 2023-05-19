@@ -50,11 +50,10 @@ export const createProject = async (
   const now = new Date();
   try {
     const results = await sequelize.query(
-      'INSERT INTO proyecto (titulo, estado, descripcion, fecha_inicio, visibilidad, ciudad, metodologia , justificacion, tipo_proyecto) values(:titulo, :estado, :descripcion, :fecha_inicio, 1, :ciudad, :metodologia, :justificacion, :tipo_proyecto);',
+      'INSERT INTO proyecto (titulo, estado, descripcion, fecha_inicio, visibilidad, ciudad, metodologia , justificacion, tipo_proyecto) values(:titulo, "PROPUESTA", :descripcion, :fecha_inicio, 1, :ciudad, :metodologia, :justificacion, :tipo_proyecto);',
       {
         replacements: {
           titulo: body.titulo,
-          estado: body.estado,
           descripcion: body.descripcion,
           fecha_inicio: now,
           ciudad: body.ciudad,
@@ -117,8 +116,6 @@ export const deleteProject = async (
   res: Response
 ) => {
   const { id } = req.params;
-
-  const { body } = req;
 
   try {
     const results = await sequelize.query(

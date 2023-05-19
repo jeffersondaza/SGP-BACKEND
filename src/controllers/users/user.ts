@@ -155,7 +155,7 @@ export const updateMyAccount = async (req: Request, res: Response) => {
         .json(
           respond(
             '0',
-            `Los datos son los mismos`,
+            'Los datos son los mismos',
             results[0]
           )
         );
@@ -174,18 +174,24 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const results = await sequelize.query(
       'UPDATE usuario SET visibilidad = 0 WHERE cedula = :cedula',
-      { replacements: { cedula: id }, type: QueryTypes.DELETE }
+      { replacements: { cedula: id }, type: QueryTypes.UPDATE }
     );
 
-    return res
-      .status(200)
-      .json(
-        respond(
-          '1',
-          `No hay ningún usuario con el id: ${id} o los datos son los mismos`,
-          results
-        )
-      );
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            'Los datos son los mismos',
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
@@ -371,4 +377,33 @@ export const validateSession = (req: Request, res: Response) => {
   const { body } = req;
 
   return res.status(200).json(respond('1', 'OK', body.token));
+};
+
+export const activateUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const results = await sequelize.query(
+      'UPDATE usuario SET visibilidad = 1 WHERE cedula = :cedula',
+      { replacements: { cedula: id }, type: QueryTypes.UPDATE }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            'Los datos son los mismos',
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
 };

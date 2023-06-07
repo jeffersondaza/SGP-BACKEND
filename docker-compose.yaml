@@ -8,7 +8,23 @@ services:
         restart: always
         environment:
           MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: sgpi_db
         ports:
           - 3306:3306
         volumes:
           - ./mysql:/var/lib/mysql
+        networks:
+          - mynetwork
+
+      backend-report: 
+        platform: linux/x86_64
+        image: openjdk:11
+        container_name: backend-report
+        restart: always
+        environment:
+          MYSQL_HOST: mysql
+          MYSQL_USER: root
+          MYSQL_PASSWORD: password
+          MYSQL_DB: sgpi_db
+        ports:
+          - 8081:8081

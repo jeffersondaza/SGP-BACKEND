@@ -4,6 +4,7 @@ import projectRoutes from '../routes/projects/project';
 import participantRoutes from '../routes/participants/participant';
 import loginRoutes from '../routes/auth/login';
 import roleRoutes from '../routes/roles/role';
+import reportRoutes from '../routes/reports/report';
 import cors from 'cors';
 
 import db from '../db/connection';
@@ -17,7 +18,8 @@ class Server {
         project: '/api/project',
         participant: '/api/participant',
         login: '/api/login',
-        role: '/api/role'
+        role: '/api/role',
+        report: '/api/report'
     };
 
     constructor(){
@@ -60,6 +62,7 @@ class Server {
         this.app.use( this.apiPaths.participant, participantRoutes);
         this.app.use( this.apiPaths.login, loginRoutes);
         this.app.use( this.apiPaths.role, roleRoutes);
+        this.app.use( this.apiPaths.report, reportRoutes);
     }
 
     listen(){

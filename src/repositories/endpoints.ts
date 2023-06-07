@@ -1,4 +1,4 @@
 
 export const endpoints = {
-    uploadFile: '/upload-file'
+    uploadFile: '/archivo/upload'
 }

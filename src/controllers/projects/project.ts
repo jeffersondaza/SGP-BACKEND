@@ -1,9 +1,16 @@
 import { Request, Response } from 'express';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../db/connection';
+import fs from 'fs';
+import FormData from 'form-data';
 
-import { CommentModelInterface, ProductModelInterface, ProjectModelInterface } from '../../interfaces/projects/projectModel.interface';
+import {
+  CommentModelInterface,
+  ProductModelInterface,
+  ProjectModelInterface,
+} from '../../interfaces/projects/projectModel.interface';
 import { respond } from '../../helpers/respond';
+import { RepositoryFactory } from '../../repositories/repositoryFactory';
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
@@ -164,7 +171,7 @@ export const approveProject = async (
           fecha_fin: now,
           retroalimentacion_final: body.retroalimentacion_final,
           conclusiones: body.conclusiones,
-          nota: body.nota
+          nota: body.nota,
         },
         type: QueryTypes.UPDATE,
       }
@@ -189,21 +196,26 @@ export const createProduct = async (
   res: Response
 ) => {
   const { body } = req;
+  const { file } = req;
+  const { id } = req.params;
 
   try {
+    const now = new Date();
+
     const results = await sequelize.query(
-      'INSERT INTO producto (titulo_producto, tipo_producto, url_repo, fecha, proyecto) values(:titulo_producto, :tipo_producto, :url_repo, :fecha, proyecto);',
+      'INSERT INTO producto (titulo_producto, tipo_producto, url_repo, fecha, proyecto) values(:titulo_producto, :tipo_producto, :url_repo, :fecha, :proyecto);',
       {
         replacements: {
           titulo_producto: body.titulo_producto,
-          tipo_producto: body.titulo_producto,
-          url_repo: body.url_repo,
-          fecha: body.fecha,
-          proyecto: body.proyecto
+          tipo_producto: body.tipo_producto,
+          url_repo: file?.path,
+          fecha: now,
+          proyecto: id,
         },
         type: QueryTypes.INSERT,
       }
     );
+
     return results
       ? res.status(200).json(respond('1', 'OK', results))
       : res.status(400).json(respond('0', 'Error', results));
@@ -218,18 +230,21 @@ export const updateProduct = async (
 ) => {
   const { id } = req.params;
   const { body } = req;
+  const { file } = req;
 
   try {
+
+    const now = new Date();
+
     const results = await sequelize.query(
-      'UPDATE producto SET titulo_producto = :titulo_producto, tipo_producto = :tipo_producto, url_repo = :url_repo, fecha = :fecha, proyecto = :proyecto WHERE id = :id;',
+      'UPDATE producto SET titulo_producto = :titulo_producto, tipo_producto = :tipo_producto, url_repo = :url_repo, fecha = :fecha WHERE id = :id;',
       {
         replacements: {
           id: id,
           titulo_producto: body.titulo_producto,
           tipo_producto: body.titulo_producto,
-          url_repo: body.url_repo,
-          fecha: body.fecha,
-          proyecto: body.proyecto
+          url_repo: file?.path,
+          fecha: now
         },
         type: QueryTypes.UPDATE,
       }
@@ -256,15 +271,18 @@ export const createComment = async (
   const { body } = req;
 
   try {
+
+    const now = new Date();
+
     const results = await sequelize.query(
-      'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id) values(:comentario, :fase, :nivel, :fecha, producto_id);',
+      'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id) values(:comentario, :fase, :nivel, :fecha, :producto_id);',
       {
         replacements: {
           comentario: body.comentario,
           fase: body.fase,
           nivel: body.nivel,
-          fecha: body.fecha,
-          producto_id: body.producto_id
+          fecha: now,
+          producto_id: body.producto_id,
         },
         type: QueryTypes.INSERT,
       }
@@ -294,7 +312,7 @@ export const updateComment = async (
           fase: body.fase,
           nivel: body.nivel,
           fecha: body.fecha,
-          producto_id: body.producto_id
+          producto_id: body.producto_id,
         },
         type: QueryTypes.UPDATE,
       }
@@ -347,6 +365,24 @@ export const getMyProjects = async (req: Request, res: Response) => {
       return res.status(200).json(respond('1', 'OK', results[0]));
     }
   } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const uploadFile = async (req: Request, res: Response) => {
+  try {
+    const { file } = req;
+    const { usuario } = req.body;
+
+    const formData = new FormData();
+    if (file && file.path) {
+      const fileData = fs.readFileSync(file?.path);
+      formData.append('file', fileData, { filename: file.originalname });
+      formData.append('usuario', usuario);
+    }
+
+    return res.status(201).json(respond('1', 'OK', ''));
+  } catch (error: any) {
     return res.status(500).json(respond('0', 'Error', error));
   }
 };

@@ -94,7 +94,7 @@ export const createUser = async (
   } catch (error: any) {
     return res
       .status(500)
-      .json(respond('0', 'Error', { error: error?.name } ?? error));
+      .json(respond('0', 'Error', { error: error } ?? error));
   }
 };
 

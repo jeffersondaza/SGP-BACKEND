@@ -109,7 +109,7 @@ export const updateProject = async (
     } else if (results[1] === 0) {
       return res
         .status(203)
-        .json(respond('0', 'Los datos son los mismos', results[0]));
+        .json(respond('0', 'Los datos son los mismos o no existe el proyecto', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
@@ -252,10 +252,10 @@ export const updateProduct = async (
 
     if (!results) {
       return res.status(400).json(respond('0', 'Error', results));
-    } else if (results[1] === 0) {
+    } else if (results[0] === 0) {
       return res
         .status(203)
-        .json(respond('0', 'Los datos son los mismos', results[0]));
+        .json(respond('0', 'Los datos son los mismos o no existe el producto', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
@@ -383,6 +383,32 @@ export const uploadFile = async (req: Request, res: Response) => {
 
     return res.status(201).json(respond('1', 'OK', ''));
   } catch (error: any) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const getProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const results: Array<ProductModelInterface> = await sequelize.query(
+      'SELECT * FROM producto where id= :id;',
+      { replacements: { id: id }, type: QueryTypes.SELECT }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (!results[0]) {
+      return res
+        .status(200)
+        .json(respond('0', `No hay ningún proyecto con el id: ${id}`, results));
+    } else {
+      const filePath = results[0].url_repo;
+
+      const fileData = fs.readFileSync(filePath);
+      return res.status(200).json(respond('1', 'OK', fileData));
+    }
+  } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
 };

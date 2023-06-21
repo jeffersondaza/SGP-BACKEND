@@ -442,4 +442,18 @@ export const activateProject = async (req: Request, res: Response) => {
   }
 };
 
+export const getProducts = async (req: Request, res: Response) => {
+  try {
+    const results: Array<ProjectModelInterface> = await sequelize.query(
+      'SELECT *  FROM producto;',
+      { type: QueryTypes.SELECT }
+    );
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
 export const createProjectType = () => {};

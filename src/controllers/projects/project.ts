@@ -413,4 +413,33 @@ export const getProduct = async (req: Request, res: Response) => {
   }
 };
 
+export const activateProject = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const results = await sequelize.query(
+      'UPDATE proyecto SET visibilidad = 1 WHERE id = :id',
+      { replacements: { id: id }, type: QueryTypes.UPDATE }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            'Los datos son los mismos',
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
 export const createProjectType = () => {};

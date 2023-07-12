@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
-import { activateProject, approveProject, createProduct, createProject, deleteProject, getMyProjects, getProduct, getProducts, getProject, getProjectType, getProjects, updateProject } from "../../controllers/projects/project";
-import { validateApproveProject, validateCreateProject, validateUpdateProject } from "../../middlewares/projects/projectValidator";
+import { activateProject, approveProject, createComment, createProduct, createProject, deleteComment, deleteProduct, deleteProject, getMyProjects, getProduct, getProducts, getProject, getProjectType, getProjects, updateProject } from "../../controllers/projects/project";
+import { validateApproveProject, validateCreateComment, validateCreateProject, validateUpdateProject } from "../../middlewares/projects/projectValidator";
 import { verifyAdminRole } from "../../middlewares/users/roles.middlewares";
 import { uploadFileValidation } from "../../middlewares/projects/uploadProductValidator";
 
@@ -21,5 +21,8 @@ router.post('/product/:id', uploadFileValidation, [genericValidations],[(verifyT
 router.get('/product/all', [(verifyToken) as any],getProducts);
 router.get('/product/:id', [genericValidations],[(verifyToken) as any], getProduct);
 router.put('/activate/:id', [genericValidations],[(verifyToken) as any], activateProject);
+router.delete('/product/:id', [(verifyToken) as any], deleteProduct);
+router.post('/product/comment/:id', validateCreateComment, [genericValidations],[(verifyToken) as any], createComment);
+router.delete('/product/comment/:id', [(verifyToken) as any], deleteComment);
 
 export default router;

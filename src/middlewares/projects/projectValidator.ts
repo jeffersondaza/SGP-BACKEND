@@ -24,3 +24,7 @@ export const validateApproveProject =[
     check('conclusiones').notEmpty().withMessage('La conclusión del proyecto es requerida').trim(),
     check('nota').notEmpty().withMessage('La nota del proyecto es requerida').trim()
 ];
+
+export const validateCreateComment =[
+    check('comentario').notEmpty().withMessage('El comentario es requerido').trim()
+];

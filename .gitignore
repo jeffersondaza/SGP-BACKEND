@@ -1,6 +1,5 @@
 /node_modules
 /mysql
-.env
 dist/
 .DS_Store
 /uploads

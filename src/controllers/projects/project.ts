@@ -268,6 +268,7 @@ export const createComment = async (
   req: Request<never, never, CommentModelInterface, never, never>,
   res: Response
 ) => {
+  const { id } = req.params;
   const { body } = req;
 
   try {
@@ -279,10 +280,10 @@ export const createComment = async (
       {
         replacements: {
           comentario: body.comentario,
-          fase: body.fase,
-          nivel: body.nivel,
+          fase: '1',
+          nivel: 'DOCENTE INVESTIGADOR',
           fecha: now,
-          producto_id: body.producto_id,
+          producto_id: id,
         },
         type: QueryTypes.INSERT,
       }
@@ -444,13 +445,87 @@ export const activateProject = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    const results: Array<ProjectModelInterface> = await sequelize.query(
+    const results: Array<ProductModelInterface> = await sequelize.query(
       'SELECT *  FROM producto;',
       { type: QueryTypes.SELECT }
     );
     return results
       ? res.status(200).json(respond('1', 'OK', results))
       : res.status(400).json(respond('0', 'Error', results));
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const deleteProduct = async (
+  req: Request<never, never, ProductModelInterface, never, never>,
+  res: Response
+) => {
+  const { id } = req.params;
+
+  try {
+    const results = await sequelize.query(
+      'DELETE FROM producto WHERE id = :id;',
+      {
+        replacements: {
+          id: id,
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            `No hay ningún proyecto con el id: ${id} o los datos son los mismos`,
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const deleteComment = async (
+  req: Request<never, never, ProductModelInterface, never, never>,
+  res: Response
+) => {
+  const { id } = req.params;
+
+  try {
+    const results = await sequelize.query(
+      'DELETE FROM comentario WHERE id = :id;',
+      {
+        replacements: {
+          id: id,
+        },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    if (!results) {
+      return res.status(400).json(respond('0', 'Error', results));
+    } else if (results[1] === 0) {
+      return res
+        .status(203)
+        .json(
+          respond(
+            '0',
+            `No hay ningún proyecto con el id: ${id} o los datos son los mismos`,
+            results[0]
+          )
+        );
+    } else {
+      return res.status(200).json(respond('1', 'OK', results));
+    }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }

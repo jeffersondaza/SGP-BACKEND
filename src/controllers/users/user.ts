@@ -56,7 +56,7 @@ export const createUser = async (
   try {
     const password = await encryptPassword(body.contrasena);
     const results = await sequelize.query(
-      'INSERT INTO usuario (cedula, cod_universitario, correo_est, contrasena, nombres, apellidos, telefono , visibilidad, correo_personal) values(:cedula, :cod_universitario, :correo_est, :password, :nombres, :apellidos, :telefono, :visibilidad, :correo_personal);',
+      'INSERT INTO usuario (cedula, cod_universitario, correo_est, contrasena, nombres, apellidos, telefono , visibilidad, correo_personal, programa_id) values(:cedula, :cod_universitario, :correo_est, :password, :nombres, :apellidos, :telefono, :visibilidad, :correo_personal, :programa_id);',
       {
         replacements: {
           cedula: body.cedula,
@@ -68,6 +68,7 @@ export const createUser = async (
           telefono: body.telefono,
           visibilidad: true,
           correo_personal: body.correo_personal,
+          programa_id: body.programa_id,
         },
         type: QueryTypes.INSERT,
       }
@@ -101,36 +102,56 @@ export const createUser = async (
 export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
-
+  const password = await encryptPassword(body.contrasena);
   try {
-    const results = await sequelize.query(
-      `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}' WHERE cedula = :cedula;`,
-      {
-        replacements: {
-          cedula: id,
-          nombres: body.nombres,
-          apellidos: body.apellidos,
-          telefono: body.telefono,
-          correo_personal: body.correo_personal
-        },
-        type: QueryTypes.UPDATE,
+    if(body.contrasena){
+      const results = await sequelize.query(
+        `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}', contrasena='${password}' WHERE cedula = :cedula;`,
+        {
+          replacements: {
+            cedula: id,
+            nombres: body.nombres,
+            apellidos: body.apellidos,
+            telefono: body.telefono,
+            correo_personal: body.correo_personal,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
+  
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(respond('1', `Los datos son los mismos`, results[0]));
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
       }
-    );
-
-    if (!results) {
-      return res.status(400).json(respond('0', 'Error', results));
-    } else if (results[1] === 0) {
-      return res
-        .status(203)
-        .json(
-          respond(
-            '1',
-            `Los datos son los mismos`,
-            results[0]
-          )
-        );
-    } else {
-      return res.status(200).json(respond('1', 'OK', results));
+    }else{
+      const results = await sequelize.query(
+        `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}' WHERE cedula = :cedula;`,
+        {
+          replacements: {
+            cedula: id,
+            nombres: body.nombres,
+            apellidos: body.apellidos,
+            telefono: body.telefono,
+            correo_personal: body.correo_personal,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
+  
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(respond('1', `Los datos son los mismos`, results[0]));
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
@@ -140,27 +161,38 @@ export const updateUser = async (req: Request, res: Response) => {
 export const updateMyAccount = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
-
+  const password = await encryptPassword(body.contrasena);
   try {
-    const results = await sequelize.query(
-      `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}' WHERE cedula = '${id}';`,
-      { type: QueryTypes.UPDATE }
-    );
+    if (body.contrasena) {
+      const results = await sequelize.query(
+        `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}', contrasena='${password}' WHERE cedula = '${id}';`,
+        { type: QueryTypes.UPDATE }
+      );
 
-    if (!results) {
-      return res.status(400).json(respond('0', 'Error', results));
-    } else if (results[1] === 0) {
-      return res
-        .status(203)
-        .json(
-          respond(
-            '0',
-            'Los datos son los mismos',
-            results[0]
-          )
-        );
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(respond('0', 'Los datos son los mismos', results[0]));
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     } else {
-      return res.status(200).json(respond('1', 'OK', results));
+      const results = await sequelize.query(
+        `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}' WHERE cedula = '${id}';`,
+        { type: QueryTypes.UPDATE }
+      );
+
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(respond('0', 'Los datos son los mismos', results[0]));
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
@@ -182,13 +214,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     } else if (results[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond(
-            '0',
-            'Los datos son los mismos',
-            results[0]
-          )
-        );
+        .json(respond('0', 'Los datos son los mismos', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
@@ -242,22 +268,20 @@ export const login = async (
         ...finalResponse
       } = result;
 
-      return res
-        .status(200)
-        .json(
-          respond('1', 'Operación exitosa!', {
-            ...finalResponse,
-            role: tipo_usuario,
-            token,
-          })
-        );
+      return res.status(200).json(
+        respond('1', 'Operación exitosa!', {
+          ...finalResponse,
+          role: tipo_usuario,
+          token,
+        })
+      );
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
 };
 
-export const getRoles = async (req: Request,  res: Response) => {
+export const getRoles = async (req: Request, res: Response) => {
   try {
     const result: Array<any> = await sequelize.query(
       'SELECT * FROM tipo_usuario',
@@ -325,13 +349,7 @@ export const updateUserRol = async (req: Request, res: Response) => {
     } else if (result[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond(
-            '0',
-            `El usuario tiene el mismo rol`,
-            result[0]
-          )
-        );
+        .json(respond('0', `El usuario tiene el mismo rol`, result[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', result));
     }
@@ -362,9 +380,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     } else if (result[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond('0', 'Los datos son los mismos', result[0])
-        );
+        .json(respond('0', 'Los datos son los mismos', result[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', result));
     }
@@ -393,13 +409,7 @@ export const activateUser = async (req: Request, res: Response) => {
     } else if (results[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond(
-            '0',
-            'Los datos son los mismos',
-            results[0]
-          )
-        );
+        .json(respond('0', 'Los datos son los mismos', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }

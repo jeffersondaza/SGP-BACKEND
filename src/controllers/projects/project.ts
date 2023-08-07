@@ -57,7 +57,7 @@ export const createProject = async (
   const now = new Date();
   try {
     const results = await sequelize.query(
-      'INSERT INTO proyecto (titulo, estado, descripcion, fecha_inicio, visibilidad, ciudad, metodologia , justificacion, tipo_proyecto) values(:titulo, "PROPUESTA", :descripcion, :fecha_inicio, 1, :ciudad, :metodologia, :justificacion, :tipo_proyecto);',
+      'INSERT INTO proyecto (titulo, estado, descripcion, fecha_inicio, visibilidad, ciudad, metodologia , justificacion, tipo_proyecto, programa_id) values(:titulo, "PROPUESTA", :descripcion, :fecha_inicio, 1, :ciudad, :metodologia, :justificacion, :tipo_proyecto, :programa_id);',
       {
         replacements: {
           titulo: body.titulo,
@@ -67,6 +67,7 @@ export const createProject = async (
           metodologia: body.metodologia,
           justificacion: body.justificacion,
           tipo_proyecto: body.tipo_proyecto,
+          programa_id: body.programa_id,
         },
         type: QueryTypes.INSERT,
       }
@@ -87,31 +88,74 @@ export const updateProject = async (
   const { body } = req;
 
   try {
-    const results = await sequelize.query(
-      'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto WHERE id = :id;',
-      {
-        replacements: {
-          id: id,
-          titulo: body.titulo,
-          estado: body.estado,
-          descripcion: body.descripcion,
-          ciudad: body.ciudad,
-          metodologia: body.metodologia,
-          justificacion: body.justificacion,
-          tipo_proyecto: body.tipo_proyecto,
-        },
-        type: QueryTypes.UPDATE,
-      }
-    );
+    if (body.fecha_inicio && body.fecha_fin) {
+      const results = await sequelize.query(
+        'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto, fecha_inicio = :fecha_inicio, fecha_fin = :fecha_fin WHERE id = :id;',
+        {
+          replacements: {
+            id: id,
+            titulo: body.titulo,
+            estado: body.estado,
+            descripcion: body.descripcion,
+            ciudad: body.ciudad,
+            metodologia: body.metodologia,
+            justificacion: body.justificacion,
+            tipo_proyecto: body.tipo_proyecto,
+            fecha_inicio: body.fecha_inicio,
+            fecha_fin: body.fecha_fin,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
 
-    if (!results) {
-      return res.status(400).json(respond('0', 'Error', results));
-    } else if (results[1] === 0) {
-      return res
-        .status(203)
-        .json(respond('0', 'Los datos son los mismos o no existe el proyecto', results[0]));
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(
+            respond(
+              '0',
+              'Los datos son los mismos o no existe el proyecto',
+              results[0]
+            )
+          );
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     } else {
-      return res.status(200).json(respond('1', 'OK', results));
+      const results = await sequelize.query(
+        'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto WHERE id = :id;',
+        {
+          replacements: {
+            id: id,
+            titulo: body.titulo,
+            estado: body.estado,
+            descripcion: body.descripcion,
+            ciudad: body.ciudad,
+            metodologia: body.metodologia,
+            justificacion: body.justificacion,
+            tipo_proyecto: body.tipo_proyecto,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
+
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(
+            respond(
+              '0',
+              'Los datos son los mismos o no existe el proyecto',
+              results[0]
+            )
+          );
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
@@ -200,7 +244,8 @@ export const createProduct = async (
   const { id } = req.params;
 
   try {
-    const now = new Date();
+    if(file){
+      const now = new Date();
 
     const results = await sequelize.query(
       'INSERT INTO producto (titulo_producto, tipo_producto, url_repo, fecha, proyecto) values(:titulo_producto, :tipo_producto, :url_repo, :fecha, :proyecto);',
@@ -219,6 +264,27 @@ export const createProduct = async (
     return results
       ? res.status(200).json(respond('1', 'OK', results))
       : res.status(400).json(respond('0', 'Error', results));
+    }else{
+      const now = new Date();
+
+    const results = await sequelize.query(
+      'INSERT INTO producto (titulo_producto, tipo_producto, url_repo, fecha, proyecto) values(:titulo_producto, :tipo_producto, :url_repo, :fecha, :proyecto);',
+      {
+        replacements: {
+          titulo_producto: body.titulo_producto,
+          tipo_producto: 'Tipo 1',
+          url_repo: body.url_repo,
+          fecha: now,
+          proyecto: id,
+        },
+        type: QueryTypes.INSERT,
+      }
+    );
+
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
+    }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
@@ -233,7 +299,6 @@ export const updateProduct = async (
   const { file } = req;
 
   try {
-
     const now = new Date();
 
     const results = await sequelize.query(
@@ -244,7 +309,7 @@ export const updateProduct = async (
           titulo_producto: body.titulo_producto,
           tipo_producto: body.titulo_producto,
           url_repo: file?.path,
-          fecha: now
+          fecha: now,
         },
         type: QueryTypes.UPDATE,
       }
@@ -255,7 +320,13 @@ export const updateProduct = async (
     } else if (results[0] === 0) {
       return res
         .status(203)
-        .json(respond('0', 'Los datos son los mismos o no existe el producto', results[0]));
+        .json(
+          respond(
+            '0',
+            'Los datos son los mismos o no existe el producto',
+            results[0]
+          )
+        );
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
@@ -272,25 +343,46 @@ export const createComment = async (
   const { body } = req;
 
   try {
+    if (body.calificacion) {
+      const now = new Date();
 
-    const now = new Date();
+      const results = await sequelize.query(
+        'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id, calificacion) values(:comentario, :fase, :nivel, :fecha, :producto_id, :calificacion);',
+        {
+          replacements: {
+            comentario: body.comentario,
+            calificacion: body.calificacion,
+            fase: '1',
+            nivel: 'DOCENTE INVESTIGADOR',
+            fecha: now,
+            producto_id: id,
+          },
+          type: QueryTypes.INSERT,
+        }
+      );
+      return results
+        ? res.status(200).json(respond('1', 'OK', results))
+        : res.status(400).json(respond('0', 'Error', results));
+    } else {
+      const now = new Date();
 
-    const results = await sequelize.query(
-      'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id) values(:comentario, :fase, :nivel, :fecha, :producto_id);',
-      {
-        replacements: {
-          comentario: body.comentario,
-          fase: '1',
-          nivel: 'DOCENTE INVESTIGADOR',
-          fecha: now,
-          producto_id: id,
-        },
-        type: QueryTypes.INSERT,
-      }
-    );
-    return results
-      ? res.status(200).json(respond('1', 'OK', results))
-      : res.status(400).json(respond('0', 'Error', results));
+      const results = await sequelize.query(
+        'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id) values(:comentario, :fase, :nivel, :fecha, :producto_id);',
+        {
+          replacements: {
+            comentario: body.comentario,
+            fase: '1',
+            nivel: 'DOCENTE INVESTIGADOR',
+            fecha: now,
+            producto_id: id,
+          },
+          type: QueryTypes.INSERT,
+        }
+      );
+      return results
+        ? res.status(200).json(respond('1', 'OK', results))
+        : res.status(400).json(respond('0', 'Error', results));
+    }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
@@ -428,13 +520,7 @@ export const activateProject = async (req: Request, res: Response) => {
     } else if (results[1] === 0) {
       return res
         .status(203)
-        .json(
-          respond(
-            '0',
-            'Los datos son los mismos',
-            results[0]
-          )
-        );
+        .json(respond('0', 'Los datos son los mismos', results[0]));
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }

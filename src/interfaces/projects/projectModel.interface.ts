@@ -15,6 +15,7 @@ export interface ProjectModelInterface {
   justificacion: string;
   nota: number;
   tipo_proyecto: string;
+  programa_id: number;
 }
 
 export interface ProductModelInterface {
@@ -29,7 +30,7 @@ export interface ProductModelInterface {
 export interface CommentModelInterface {
   id: number;
   comentario: string;
-  califiacion: number;
+  calificacion: number;
   fase: string;
   nivel: string;
   fecha: Date; 

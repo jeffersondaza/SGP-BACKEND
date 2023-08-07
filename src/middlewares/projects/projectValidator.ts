@@ -6,7 +6,8 @@ export const validateCreateProject =[
     check('ciudad').notEmpty().withMessage('La ciudad es requerida').trim(),
     check('metodologia').notEmpty().withMessage('La metodologia es requerida').trim(),
     check('justificacion').notEmpty().withMessage('La justificacion es requerida').trim(),
-    check('tipo_proyecto').notEmpty().withMessage('El tipo de proyecto es requerido').trim()
+    check('tipo_proyecto').notEmpty().withMessage('El tipo de proyecto es requerido').trim(),
+    check('programa_id').notEmpty().withMessage('El programa al cual pertenece el usuario es requerido').trim()
 ];
 
 export const validateUpdateProject =[

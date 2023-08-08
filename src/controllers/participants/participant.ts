@@ -30,6 +30,7 @@ export const assignRolInProject = async (
       ? res.status(200).json(respond('1', 'OK', results))
       : res.status(400).json(respond('0', 'Error', results));
   } catch (error: any) {
+    console.log(error)
     return res
       .status(500)
       .json(respond('0', 'Error', { error: error?.name } ?? error));

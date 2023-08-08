@@ -19,6 +19,9 @@ export const validateUpdateProject =[
     check('justificacion').notEmpty().withMessage('La justificacion es requerida').trim(),
     check('tipo_proyecto').notEmpty().withMessage('El tipo de proyecto es requerido').trim()
 ];
+export const validateUpdateProjectStatus =[
+    check('estado').notEmpty().withMessage('El estado es requerida').trim(),
+];
 
 export const validateApproveProject =[
     check('retroalimentacion_final').notEmpty().withMessage('La retroalimentación del proyecto es requerida').trim(),

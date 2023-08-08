@@ -102,9 +102,9 @@ export const createUser = async (
 export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
-  const password = await encryptPassword(body.contrasena);
   try {
     if(body.contrasena){
+      const password = await encryptPassword(body.contrasena);
       const results = await sequelize.query(
         `UPDATE usuario SET nombres= '${body.nombres}', apellidos='${body.apellidos}', telefono= ${body.telefono}, correo_personal='${body.correo_personal}', contrasena='${password}' WHERE cedula = :cedula;`,
         {

@@ -41,7 +41,7 @@ export const getParticipants = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const results: Array<ParticipantModelInterface> = await sequelize.query(
-      'SELECT *  FROM participantes WHERE proyecto = :proyecto;',
+      'SELECT *  FROM participantes JOIN usuario on participantes.usuario = usuario.cedula WHERE proyecto = :proyecto;',
       {replacements:{
         proyecto: id
       }, 

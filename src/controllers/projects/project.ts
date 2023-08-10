@@ -224,7 +224,7 @@ export const createProduct = async (
           replacements: {
             titulo_producto: body.titulo_producto,
             tipo_producto: body.tipo_producto,
-            url_repo: file?.path,
+            url_repo: `${process.env.SERVERURL}:${process.env.PORT}/${file?.path}`,
             fecha: now,
             proyecto: id,
           },

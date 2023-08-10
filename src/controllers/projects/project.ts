@@ -11,6 +11,7 @@ import {
 } from '../../interfaces/projects/projectModel.interface';
 import { respond } from '../../helpers/respond';
 import { RepositoryFactory } from '../../repositories/repositoryFactory';
+import { ParticipantModelInterface } from '../../interfaces/participants/participant';
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
@@ -18,9 +19,22 @@ export const getProjects = async (req: Request, res: Response) => {
       'SELECT *  FROM proyecto;',
       { type: QueryTypes.SELECT }
     );
+
+    const projects = results.map( async (project)=>{
+      const query = await sequelize.query(
+        'SELECT participantes.usuario, participantes.rol FROM proyecto inner join participantes ON participantes.proyecto = proyecto.id AND proyecto.id = :id;',
+        { replacements: { id: project.id }, type: QueryTypes.SELECT }
+      );
+
+      const objetoCombinado = { ...project, participants:[...query]};
+
+      return objetoCombinado;
+    })
+    const projectsResults = await Promise.all(projects);
+
     return results
-      ? res.status(200).json(respond('1', 'OK', results))
-      : res.status(400).json(respond('0', 'Error', results));
+      ? res.status(200).json(respond('1', 'OK', projectsResults))
+      : res.status(400).json(respond('0', 'Error', projectsResults));
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }
@@ -31,7 +45,12 @@ export const getProject = async (req: Request, res: Response) => {
 
   try {
     const results: Array<ProjectModelInterface> = await sequelize.query(
-      'SELECT * FROM proyecto where id= :id;',
+      'SELECT proyecto.*, programa.nombre as programa FROM proyecto inner join programa ON programa.id = proyecto.programa_id AND proyecto.id = :id;',
+      { replacements: { id: id }, type: QueryTypes.SELECT }
+    );
+
+    const resultsParticipants: Array<ParticipantModelInterface> = await sequelize.query(
+      'SELECT participantes.usuario, participantes.rol FROM proyecto inner join participantes ON participantes.proyecto = proyecto.id AND proyecto.id = :id;',
       { replacements: { id: id }, type: QueryTypes.SELECT }
     );
 
@@ -42,7 +61,8 @@ export const getProject = async (req: Request, res: Response) => {
         .status(200)
         .json(respond('0', `No hay ningún proyecto con el id: ${id}`, results));
     } else {
-      return res.status(200).json(respond('1', 'OK', results[0]));
+      const objetoCombinado = { ...results[0], participants:[...resultsParticipants]};
+      return res.status(200).json(respond('1', 'OK', objetoCombinado));
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
@@ -88,45 +108,142 @@ export const updateProject = async (
   const { body } = req;
 
   try {
-    const project: Array<ProjectModelInterface> = await sequelize.query(
-      'SELECT * FROM proyecto where id= :id;',
-      { replacements: { id: id }, type: QueryTypes.SELECT }
-    );
-    console.log(project[0]);
-    const results = await sequelize.query(
-      'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto, fecha_inicio = :fecha_inicio, fecha_fin = :fecha_fin, programa_id = :programa_id WHERE id = :id;',
-      {
-        replacements: {
-          id: id,
-          titulo: body.titulo ?? project[0].titulo,
-          estado: body.estado ?? project[0].estado,
-          descripcion: body.descripcion ?? project[0].descripcion,
-          ciudad: body.ciudad ?? project[0].ciudad,
-          metodologia: body.metodologia ?? project[0].metodologia,
-          justificacion: body.justificacion ?? project[0].justificacion,
-          tipo_proyecto: body.tipo_proyecto ?? project[0].tipo_proyecto,
-          fecha_inicio: body.fecha_inicio ?? project[0].fecha_inicio,
-          fecha_fin: body.fecha_fin ?? project[0].fecha_fin,
-          programa_id: body.programa_id ?? project[0].programa_id,
-        },
-        type: QueryTypes.UPDATE,
-      }
-    );
+    if (body.fecha_inicio && body.fecha_fin) {
+      const results = await sequelize.query(
+        'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto, fecha_inicio = :fecha_inicio, fecha_fin = :fecha_fin WHERE id = :id;',
+        {
+          replacements: {
+            id: id,
+            titulo: body.titulo,
+            estado: body.estado,
+            descripcion: body.descripcion,
+            ciudad: body.ciudad,
+            metodologia: body.metodologia,
+            justificacion: body.justificacion,
+            tipo_proyecto: body.tipo_proyecto,
+            fecha_inicio: body.fecha_inicio,
+            fecha_fin: body.fecha_fin,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
 
-    if (!results) {
-      return res.status(400).json(respond('0', 'Error', results));
-    } else if (results[1] === 0) {
-      return res
-        .status(203)
-        .json(
-          respond(
-            '0',
-            'Los datos son los mismos o no existe el proyecto',
-            results[0]
-          )
-        );
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(
+            respond(
+              '0',
+              'Los datos son los mismos o no existe el proyecto',
+              results[0]
+            )
+          );
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
+    } else if (body.fecha_inicio) {
+      const results = await sequelize.query(
+        'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto, fecha_inicio = :fecha_inicio WHERE id = :id;',
+        {
+          replacements: {
+            id: id,
+            titulo: body.titulo,
+            estado: body.estado,
+            descripcion: body.descripcion,
+            ciudad: body.ciudad,
+            metodologia: body.metodologia,
+            justificacion: body.justificacion,
+            tipo_proyecto: body.tipo_proyecto,
+            fecha_inicio: body.fecha_inicio
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
+
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(
+            respond(
+              '0',
+              'Los datos son los mismos o no existe el proyecto',
+              results[0]
+            )
+          );
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
+    } else if (body.fecha_fin) {
+      const results = await sequelize.query(
+        'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto, fecha_fin = :fecha_fin WHERE id = :id;',
+        {
+          replacements: {
+            id: id,
+            titulo: body.titulo,
+            estado: body.estado,
+            descripcion: body.descripcion,
+            ciudad: body.ciudad,
+            metodologia: body.metodologia,
+            justificacion: body.justificacion,
+            tipo_proyecto: body.tipo_proyecto,
+            fecha_fin: body.fecha_fin,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
+
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(
+            respond(
+              '0',
+              'Los datos son los mismos o no existe el proyecto',
+              results[0]
+            )
+          );
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     } else {
-      return res.status(200).json(respond('1', 'OK', results));
+      const results = await sequelize.query(
+        'UPDATE proyecto SET titulo = :titulo, estado = :estado, descripcion = :descripcion, ciudad = :ciudad, metodologia = :metodologia, justificacion = :justificacion, tipo_proyecto = :tipo_proyecto WHERE id = :id;',
+        {
+          replacements: {
+            id: id,
+            titulo: body.titulo,
+            estado: body.estado,
+            descripcion: body.descripcion,
+            ciudad: body.ciudad,
+            metodologia: body.metodologia,
+            justificacion: body.justificacion,
+            tipo_proyecto: body.tipo_proyecto,
+          },
+          type: QueryTypes.UPDATE,
+        }
+      );
+
+      if (!results) {
+        return res.status(400).json(respond('0', 'Error', results));
+      } else if (results[1] === 0) {
+        return res
+          .status(203)
+          .json(
+            respond(
+              '0',
+              'Los datos son los mismos o no existe el proyecto',
+              results[0]
+            )
+          );
+      } else {
+        return res.status(200).json(respond('1', 'OK', results));
+      }
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
@@ -468,7 +585,7 @@ export const getProduct = async (req: Request, res: Response) => {
         .json(respond('0', `No hay ningún proyecto con el id: ${id}`, results));
     } else {
       const filePath = results[0].url_repo;
-
+      console.log(results[0].url_repo);
       const fileData = fs.readFileSync(filePath);
       return res.status(200).json(respond('1', 'OK', fileData));
     }
@@ -502,16 +619,9 @@ export const activateProject = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-
     const results: Array<ProductModelInterface> = await sequelize.query(
-      'SELECT *  FROM producto where proyecto= :proyecto;',
-      {
-        replacements: {
-          proyecto: id,
-        },
-        type: QueryTypes.SELECT,
-      }
+      'SELECT *  FROM producto;',
+      { type: QueryTypes.SELECT }
     );
     return results
       ? res.status(200).json(respond('1', 'OK', results))

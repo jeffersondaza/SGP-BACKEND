@@ -464,7 +464,7 @@ export const createComment = async (
           replacements: {
             comentario: body.comentario,
             fase: '1',
-            nivel: body.nivel,
+            nivel: 'DOCENTE INVESTIGADOR',
             fecha: now,
             producto_id: id,
             usuario_id: body.usuario_id,

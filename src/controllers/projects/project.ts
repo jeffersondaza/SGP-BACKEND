@@ -619,9 +619,11 @@ export const activateProject = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
+    const { id } = req.params;
+
     const results: Array<ProductModelInterface> = await sequelize.query(
-      'SELECT *  FROM producto;',
-      { type: QueryTypes.SELECT }
+      'SELECT *  FROM producto WHERE proyecto=:id;',
+      { replacements: { id: id }, type: QueryTypes.SELECT }
     );
     return results
       ? res.status(200).json(respond('1', 'OK', results))

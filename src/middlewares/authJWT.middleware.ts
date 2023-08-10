@@ -36,9 +36,6 @@ export const verifyToken = async (req: CustomRequest, res: Response, next: NextF
 
         if (!user)
             return res.status(404).json({ message: 'User not found' })
-
-        console.log('user :' + req.userId);
-
         next();
         
     } catch (err:any) {

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
-import { activateProject, approveProject, createComment, createProduct, createProject, deleteComment, deleteProduct, deleteProject, getMyProjects, getProduct, getProducts, getProject, getProjectType, getProjects, updateProject } from "../../controllers/projects/project";
+import { activateProject, approveProject, createComment, createProduct, createProject, deleteComment, deleteProduct, deleteProject, getComments, getMyProjects, getProduct, getProducts, getProject, getProjectType, getProjects, updateProject } from "../../controllers/projects/project";
 import { validateApproveProject, validateCreateComment, validateCreateProject, validateUpdateProject, validateUpdateProjectStatus } from "../../middlewares/projects/projectValidator";
 import { verifyAdminRole } from "../../middlewares/users/roles.middlewares";
 import { uploadFileValidation } from "../../middlewares/projects/uploadProductValidator";
@@ -25,5 +25,6 @@ router.put('/activate/:id', [genericValidations],[(verifyToken) as any], activat
 router.delete('/product/:id', [(verifyToken) as any], deleteProduct);
 router.post('/product/comment/:id', validateCreateComment, [genericValidations],[(verifyToken) as any], createComment);
 router.delete('/product/comment/:id', [(verifyToken) as any], deleteComment);
+router.get('/product/comment/:id',[(verifyToken) as any], getComments);
 
 export default router;

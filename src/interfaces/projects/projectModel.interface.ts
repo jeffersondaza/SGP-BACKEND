@@ -35,4 +35,5 @@ export interface CommentModelInterface {
   nivel: string;
   fecha: Date; 
   producto_id: number;
+  usuario_id: string;
 }

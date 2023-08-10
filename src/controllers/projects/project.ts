@@ -20,16 +20,16 @@ export const getProjects = async (req: Request, res: Response) => {
       { type: QueryTypes.SELECT }
     );
 
-    const projects = results.map( async (project)=>{
+    const projects = results.map(async (project) => {
       const query = await sequelize.query(
         'SELECT participantes.usuario, participantes.rol FROM proyecto inner join participantes ON participantes.proyecto = proyecto.id AND proyecto.id = :id;',
         { replacements: { id: project.id }, type: QueryTypes.SELECT }
       );
 
-      const objetoCombinado = { ...project, participants:[...query]};
+      const objetoCombinado = { ...project, participants: [...query] };
 
       return objetoCombinado;
-    })
+    });
     const projectsResults = await Promise.all(projects);
 
     return results
@@ -49,10 +49,11 @@ export const getProject = async (req: Request, res: Response) => {
       { replacements: { id: id }, type: QueryTypes.SELECT }
     );
 
-    const resultsParticipants: Array<ParticipantModelInterface> = await sequelize.query(
-      'SELECT participantes.usuario, participantes.rol FROM proyecto inner join participantes ON participantes.proyecto = proyecto.id AND proyecto.id = :id;',
-      { replacements: { id: id }, type: QueryTypes.SELECT }
-    );
+    const resultsParticipants: Array<ParticipantModelInterface> =
+      await sequelize.query(
+        'SELECT participantes.usuario, participantes.rol FROM proyecto inner join participantes ON participantes.proyecto = proyecto.id AND proyecto.id = :id;',
+        { replacements: { id: id }, type: QueryTypes.SELECT }
+      );
 
     if (!results) {
       return res.status(400).json(respond('0', 'Error', results));
@@ -61,7 +62,10 @@ export const getProject = async (req: Request, res: Response) => {
         .status(200)
         .json(respond('0', `No hay ningún proyecto con el id: ${id}`, results));
     } else {
-      const objetoCombinado = { ...results[0], participants:[...resultsParticipants]};
+      const objetoCombinado = {
+        ...results[0],
+        participants: [...resultsParticipants],
+      };
       return res.status(200).json(respond('1', 'OK', objetoCombinado));
     }
   } catch (error) {
@@ -156,7 +160,7 @@ export const updateProject = async (
             metodologia: body.metodologia,
             justificacion: body.justificacion,
             tipo_proyecto: body.tipo_proyecto,
-            fecha_inicio: body.fecha_inicio
+            fecha_inicio: body.fecha_inicio,
           },
           type: QueryTypes.UPDATE,
         }
@@ -433,17 +437,17 @@ export const createComment = async (
   try {
     if (body.calificacion) {
       const now = new Date();
-
       const results = await sequelize.query(
-        'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id, calificacion) values(:comentario, :fase, :nivel, :fecha, :producto_id, :calificacion);',
+        'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id, calificacion, usuario_id) values(:comentario, :fase, :nivel, :fecha, :producto_id, :calificacion, :usuario_id);',
         {
           replacements: {
             comentario: body.comentario,
             calificacion: body.calificacion,
             fase: '1',
-            nivel: 'DOCENTE INVESTIGADOR',
+            nivel: body.nivel,
             fecha: now,
             producto_id: id,
+            usuario_id: body.usuario_id,
           },
           type: QueryTypes.INSERT,
         }
@@ -455,18 +459,20 @@ export const createComment = async (
       const now = new Date();
 
       const results = await sequelize.query(
-        'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id) values(:comentario, :fase, :nivel, :fecha, :producto_id);',
+        'INSERT INTO comentario (comentario, fase, nivel, fecha, producto_id, usuario_id) values(:comentario, :fase, :nivel, :fecha, :producto_id, :usuario_id);',
         {
           replacements: {
             comentario: body.comentario,
             fase: '1',
-            nivel: 'DOCENTE INVESTIGADOR',
+            nivel: body.nivel,
             fecha: now,
             producto_id: id,
+            usuario_id: body.usuario_id,
           },
           type: QueryTypes.INSERT,
         }
       );
+
       return results
         ? res.status(200).json(respond('1', 'OK', results))
         : res.status(400).json(respond('0', 'Error', results));
@@ -702,6 +708,30 @@ export const deleteComment = async (
     } else {
       return res.status(200).json(respond('1', 'OK', results));
     }
+  } catch (error) {
+    return res.status(500).json(respond('0', 'Error', error));
+  }
+};
+
+export const getComments = async (
+  req: Request<never, never, CommentModelInterface, never, never>,
+  res: Response
+) => {
+  const { id } = req.params;
+  try {
+    const results: Array<ProjectModelInterface> = await sequelize.query(
+      'SELECT comentario.*, usuario.nombres, usuario.apellidos FROM comentario inner join usuario ON comentario.usuario_id = usuario.cedula AND producto_id = :id;',
+      {
+        replacements: {
+          id: id,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return results
+      ? res.status(200).json(respond('1', 'OK', results))
+      : res.status(400).json(respond('0', 'Error', results));
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));
   }

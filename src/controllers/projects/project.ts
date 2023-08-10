@@ -631,8 +631,21 @@ export const getProducts = async (req: Request, res: Response) => {
       'SELECT *  FROM producto WHERE proyecto=:id;',
       { replacements: { id: id }, type: QueryTypes.SELECT }
     );
+
+    const products = results.map(async (product) => {
+      const query = await sequelize.query(
+        'SELECT comentario.*, usuario.nombres, usuario.apellidos FROM comentario inner join usuario ON comentario.usuario_id = usuario.cedula AND producto_id = :id;',
+        { replacements: { id: product.id }, type: QueryTypes.SELECT }
+      );
+  
+      const mixedObject = { ...product, comentarios: [...query] };
+  
+      return mixedObject;
+    });
+
+    const productsResults = await Promise.all(products);
     return results
-      ? res.status(200).json(respond('1', 'OK', results))
+      ? res.status(200).json(respond('1', 'OK', productsResults))
       : res.status(400).json(respond('0', 'Error', results));
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));

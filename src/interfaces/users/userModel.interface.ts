@@ -12,7 +12,8 @@ export interface UserModelInterface {
   programa_id: number;
   nombre?: string;
   tipo_usuario?: string;
-  descripcion?: string
+  descripcion?: string;
+  acceso?: JSON
 }
 
 export interface LoginRequestInterface {

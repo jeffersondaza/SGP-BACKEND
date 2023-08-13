@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteUser, getUser, getUsers, createUser, updateUser, login, getRol, getRoles, updateUserRol, updatePassword, validateSession, activateUser } from "../../controllers/users/user";
+import { deleteUser, getUser, getUsers, createUser, updateUser, login, updatePassword, validateSession, activateUser } from "../../controllers/users/user";
 import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
 import { validateChangePassword, validateCreateUser, validateUpdateUser, validateUserSession } from "../../middlewares/users/userValidator";

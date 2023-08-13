@@ -231,7 +231,7 @@ export const login = async (
 
   try {
     const [result]: Array<UserModelInterface> = await sequelize.query(
-      'SELECT * FROM usuario JOIN usuarios ON usuario.cedula = usuarios.usuario JOIN tipo_usuario ON usuarios.tipo_usuario = tipo_usuario.nombre WHERE usuario.correo_est = :correo_est',
+      'SELECT usuario.*, usuarios.*, tipo_usuario.*, permisos.acceso FROM usuario INNER JOIN usuarios ON usuario.cedula = usuarios.usuario INNER JOIN tipo_usuario ON usuarios.tipo_usuario = tipo_usuario.nombre  INNER JOIN permisos ON tipo_usuario.nombre = permisos.tipo_usuario_nombre WHERE usuario.correo_est = :correo_est',
       {
         replacements: {
           correo_est: body.institutionalEmail,
@@ -265,6 +265,7 @@ export const login = async (
         nombre,
         tipo_usuario,
         descripcion,
+        acceso,
         ...finalResponse
       } = result;
 
@@ -272,86 +273,10 @@ export const login = async (
         respond('1', 'Operación exitosa!', {
           ...finalResponse,
           role: tipo_usuario,
+          acceso: acceso,
           token,
         })
       );
-    }
-  } catch (error) {
-    return res.status(500).json(respond('0', 'Error', error));
-  }
-};
-
-export const getRoles = async (req: Request, res: Response) => {
-  try {
-    const result: Array<any> = await sequelize.query(
-      'SELECT * FROM tipo_usuario',
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
-
-    return result
-      ? res.status(200).json(respond('1', 'OK', result))
-      : res.status(400).json(respond('0', 'Error', result));
-  } catch (error) {
-    return res.status(500).json(respond('0', 'Error', error));
-  }
-};
-
-export const getRol = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  try {
-    const result: Array<any> = await sequelize.query(
-      'SELECT * FROM usuarios WHERE usuario = :usuario',
-      {
-        replacements: {
-          usuario: id,
-        },
-        type: QueryTypes.SELECT,
-      }
-    );
-
-    if (!result) {
-      res.status(400).json(respond('0', 'Error', result));
-    } else if (!result[0]) {
-      return res
-        .status(203)
-        .json(respond('0', `No hay ningún usuario con el id: ${id}`, result));
-    } else {
-      return res
-        .status(200)
-        .json(respond('1', 'OK', { rol: result[0].tipo_usuario }));
-    }
-  } catch (error) {
-    return res.status(500).json(respond('0', 'Error', error));
-  }
-};
-
-export const updateUserRol = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { body } = req;
-
-  try {
-    const result = await sequelize.query(
-      'UPDATE usuarios SET tipo_usuario = :tipo_usuario WHERE usuario = :usuario;',
-      {
-        replacements: {
-          usuario: id,
-          tipo_usuario: body.tipo_usuario,
-        },
-        type: QueryTypes.UPDATE,
-      }
-    );
-
-    if (!result) {
-      return res.status(400).json(respond('0', 'Error', result));
-    } else if (result[1] === 0) {
-      return res
-        .status(203)
-        .json(respond('0', `El usuario tiene el mismo rol`, result[0]));
-    } else {
-      return res.status(200).json(respond('1', 'OK', result));
     }
   } catch (error) {
     return res.status(500).json(respond('0', 'Error', error));

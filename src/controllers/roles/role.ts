@@ -85,33 +85,87 @@ export const createRolPermissions = async (
   const { body } = req;
 
   try {
-    const result: Array<any> = await sequelize.query(
-      'SELECT * FROM permisos WHERE tipo_usuario_nombre = :tipo_usuario_nombre;',
+    const resultRol: Array<any> = await sequelize.query(
+      'SELECT * FROM tipo_usuario WHERE nombre = :tipo_usuario;',
       {
         replacements: {
-          tipo_usuario_nombre: body.tipo_usuario,
+          tipo_usuario: body.tipo_usuario,
         },
         type: QueryTypes.SELECT,
       }
     );
 
-    if (!result[0]) {
-      const results = await sequelize.query(
-        `INSERT INTO permisos (tipo_usuario_nombre, acceso) VALUES ("${body.tipo_usuario}", '{"USUARIOS": "${body.USUARIOS}", "PROGRAMAS": "${body.PROGRAMAS}", "FACULTADES": "${body.FACULTADES}", "EVENTOS": "${body.EVENTOS}", "PROYECTOS": "${body.PROYECTOS}", "SEMILLEROS": "${body.SEMILLEROS}", "REPORTES": "${body.REPORTES}", "ROLES": "${body.ROLES}"}');`,
+    if(resultRol[0]){
+      const result: Array<any> = await sequelize.query(
+        'SELECT * FROM permisos WHERE tipo_usuario_nombre = :tipo_usuario_nombre;',
         {
+          replacements: {
+            tipo_usuario_nombre: body.tipo_usuario,
+          },
+          type: QueryTypes.SELECT,
+        }
+      );
+  
+      if (!result[0]) {
+        const results = await sequelize.query(
+          `INSERT INTO permisos (tipo_usuario_nombre, acceso) VALUES ("${body.tipo_usuario}", '{"USUARIOS": "${body.USUARIOS}", "PROGRAMAS": "${body.PROGRAMAS}", "FACULTADES": "${body.FACULTADES}", "EVENTOS": "${body.EVENTOS}", "PROYECTOS": "${body.PROYECTOS}", "SEMILLEROS": "${body.SEMILLEROS}", "REPORTES": "${body.REPORTES}", "ROLES": "${body.ROLES}"}');`,
+          {
+            type: QueryTypes.INSERT,
+          }
+        );
+  
+        return results
+          ? res.status(200).json(respond('1', 'OK', results))
+          : res.status(400).json(respond('0', 'Error', results));
+      } else if (result[0]) {
+        return res
+          .status(200)
+          .json(respond('1', 'Ya hay unos permisos registrados para este Rol', result));
+      } else {
+        res.status(400).json(respond('0', 'Error', result));
+      }
+    }else{
+      const resultInsertRol = await sequelize.query(
+        'INSERT INTO tipo_usuario (nombre, descripcion) values(:nombre, :descripcion);',
+        {
+          replacements: {
+            nombre: body.tipo_usuario,
+            descripcion: body.tipo_usuario,
+          },
           type: QueryTypes.INSERT,
         }
       );
 
-      return results
-        ? res.status(200).json(respond('1', 'OK', results))
-        : res.status(400).json(respond('0', 'Error', results));
-    } else if (result[0]) {
-      return res
-        .status(203)
-        .json(respond('0', 'Ya hay unos permisos registrados para este Rol', result));
-    } else {
-      res.status(400).json(respond('0', 'Error', result));
+      if(resultInsertRol){
+        const result: Array<any> = await sequelize.query(
+          'SELECT * FROM permisos WHERE tipo_usuario_nombre = :tipo_usuario_nombre;',
+          {
+            replacements: {
+              tipo_usuario_nombre: body.tipo_usuario,
+            },
+            type: QueryTypes.SELECT,
+          }
+        );
+    
+        if (!result[0]) {
+          const results = await sequelize.query(
+            `INSERT INTO permisos (tipo_usuario_nombre, acceso) VALUES ("${body.tipo_usuario}", '{"USUARIOS": "${body.USUARIOS}", "PROGRAMAS": "${body.PROGRAMAS}", "FACULTADES": "${body.FACULTADES}", "EVENTOS": "${body.EVENTOS}", "PROYECTOS": "${body.PROYECTOS}", "SEMILLEROS": "${body.SEMILLEROS}", "REPORTES": "${body.REPORTES}", "ROLES": "${body.ROLES}"}');`,
+            {
+              type: QueryTypes.INSERT,
+            }
+          );
+    
+          return results
+            ? res.status(200).json(respond('1', 'OK', results))
+            : res.status(400).json(respond('0', 'Error', results));
+        } else if (result[0]) {
+          return res
+            .status(203)
+            .json(respond('0', 'Ya hay unos permisos registrados para este Rol', result));
+        } else {
+          res.status(400).json(respond('0', 'Error', result));
+        }
+      }
     }
   } catch (error: any) {
     return res

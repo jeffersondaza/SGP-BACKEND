@@ -96,6 +96,22 @@ export const createProject = async (
         type: QueryTypes.INSERT,
       }
     );
+
+    if(results[0]){
+      const resultInsertParticipant = await sequelize.query(
+        'INSERT INTO participantes (usuario, proyecto, fecha_inicio, rol) values(:usuario, :proyecto, :fecha_inicio, :rol);',
+        {
+          replacements: {
+            usuario: body.usuario,
+            proyecto: results[0],
+            fecha_inicio: now,
+            rol: 'DOCENTE INVESTIGADOR',
+          },
+          type: QueryTypes.INSERT,
+        }
+      );
+    }
+    
     return results
       ? res.status(200).json(respond('1', 'OK', results))
       : res.status(400).json(respond('0', 'Error', results));

@@ -16,6 +16,7 @@ export interface ProjectModelInterface {
   nota: number;
   tipo_proyecto: string;
   programa_id: number;
+  usuario: string;
 }
 
 export interface ProductModelInterface {

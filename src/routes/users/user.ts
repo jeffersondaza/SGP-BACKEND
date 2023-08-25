@@ -3,7 +3,7 @@ import { deleteUser, getUser, getUsers, createUser, updateUser, login, updatePas
 import { verifyToken } from "../../middlewares/authJWT.middleware";
 import { genericValidations } from "../../middlewares/generic.middleware";
 import { validateChangePassword, validateCreateUser, validateUpdateUser, validateUserSession } from "../../middlewares/users/userValidator";
-import { verifyAdminRole, verifyStudentRole } from "../../middlewares/users/roles.middlewares";
+// import { verifyAdminRole, verifyStudentRole } from "../../middlewares/users/roles.middlewares";
 
 const router = Router();
 

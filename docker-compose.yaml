@@ -14,18 +14,18 @@ services:
         volumes:
           - ./mysql:/var/lib/mysql
 
-      sgpi-api--node: 
-        platform: linux/x86_64
-        image: sgpi-api--node
-        container_name: sgpi-api--node
-        restart: always
-        environment:
-          MYSQL_HOST: mysql
-          MYSQL_USER: root
-          MYSQL_PASSWORD: password
-          MYSQL_DB: sgpi_db
-        ports:
-          - 3000:3000
+      # sgpi-api--node: 
+      #   platform: linux/x86_64
+      #   image: sgpi-api--node
+      #   container_name: sgpi-api--node
+      #   restart: always
+      #   environment:
+      #     MYSQL_HOST: mysql
+      #     MYSQL_USER: root
+      #     MYSQL_PASSWORD: password
+      #     MYSQL_DB: sgpi_db
+      #   ports:
+      #     - 3000:3000
 
       # backend-report: 
       #   platform: linux/x86_64

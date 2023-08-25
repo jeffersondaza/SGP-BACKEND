@@ -10,7 +10,7 @@ import { uploadFileValidation } from "../../middlewares/projects/uploadProductVa
 const router = Router();
 
 router.get('/:id',[(verifyToken) as any], getProject);
-router.get('/', [(verifyToken) as any, verifyAdminRole],getProjects);
+router.get('/', [(verifyToken) as any],getProjects);
 router.post('/', validateCreateProject, [genericValidations],[(verifyToken) as any], createProject);
 router.put('/:id', validateUpdateProject, [genericValidations],[(verifyToken) as any], updateProject);
 router.put('/update-status/:id', validateUpdateProjectStatus, [genericValidations],[(verifyToken) as any], updateProject);

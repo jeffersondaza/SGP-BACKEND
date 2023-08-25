@@ -11,14 +11,14 @@ const router = Router();
 
 //TODO 
 
-router.get('/', [verifyToken, verifyAdminRole],getUsers);
-router.get('/:id', [genericValidations],[verifyToken as any, verifyAdminRole], getUser);
+router.get('/', [(verifyToken) as any],getUsers);
+router.get('/:id', [genericValidations],[verifyToken as any], getUser);
 router.post('/', validateCreateUser, [genericValidations], createUser);
-router.put('/:id', validateUpdateUser, [genericValidations], [(verifyToken) as any, verifyAdminRole],updateUser );
+router.put('/:id', validateUpdateUser, [genericValidations], [(verifyToken) as any],updateUser );
 router.put('/my-account/:id', validateUpdateUser, [genericValidations], [(verifyToken) as any],updateUser );
-router.delete('/:id', [(verifyToken) as any, verifyAdminRole],deleteUser); 
+router.delete('/:id', [(verifyToken) as any],deleteUser); 
 router.get('/validate-session', validateUserSession, [genericValidations],[(verifyToken) as any],  validateSession);
 router.put('/change-password/:id', validateChangePassword, [genericValidations],[(verifyToken) as any], updatePassword);
-router.put('/activate/:id', [genericValidations],[(verifyToken) as any, verifyAdminRole], activateUser);
+router.put('/activate/:id', [genericValidations],[(verifyToken) as any], activateUser);
 
 export default router;

@@ -7,9 +7,9 @@ import { validateCreateRolePermissions, validateUpdateRole, validateUpdateRolePe
 const router = Router();
 
 router.get('/',[(verifyToken) as any], getRoles);
-router.get('/:id', [(verifyToken) as any, verifyAdminRole], getRol);
-router.post('/permissions', validateCreateRolePermissions ,[(verifyToken) as any, verifyAdminRole], createRolPermissions);
-router.put('/permissions/', validateUpdateRolePermissions ,[(verifyToken) as any, verifyAdminRole], updateRolPermissions);
-router.put('/:id', validateUpdateRole ,[(verifyToken) as any, verifyAdminRole], updateUserRol);
+router.get('/:id', [(verifyToken) as any], getRol);
+router.post('/permissions', validateCreateRolePermissions ,[(verifyToken) as any], createRolPermissions);
+router.put('/permissions/', validateUpdateRolePermissions ,[(verifyToken) as any], updateRolPermissions);
+router.put('/:id', validateUpdateRole ,[(verifyToken) as any], updateUserRol);
 
 export default router;

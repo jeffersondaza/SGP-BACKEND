@@ -282,7 +282,7 @@ export const createProduct = async (
         {
           replacements: {
             titulo_producto: body.titulo_producto,
-            tipo_producto: 'Tipo 1',
+            tipo_producto: body.url_repo,
             url_repo: body.url_repo,
             fecha: now,
             proyecto: id,
